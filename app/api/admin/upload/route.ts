@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { existsSync } from "fs";
+import { v2 as cloudinary } from "cloudinary";
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,28 +33,57 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Convert file to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
+    const base64 = buffer.toString("base64");
+    const dataUri = `data:${file.type};base64,${base64}`;
 
-    const timestamp = Date.now();
-    const randomStr = Math.random().toString(36).substring(2, 8);
-    const ext = file.type.split("/")[1];
-    const fileName = `${timestamp}-${randomStr}.${ext}`;
+    // Upload to Cloudinary
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: "brivia/products",
+      resource_type: "image",
+      transformation: [
+        { width: 800, height: 800, crop: "limit" },
+        { quality: "auto", fetch_format: "auto" },
+      ],
+    });
 
-    const uploadDir = path.join(process.cwd(), "public", "uploads");
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
-
-    const filePath = path.join(uploadDir, fileName);
-    await writeFile(filePath, buffer);
-
-    const publicPath = `/uploads/${fileName}`;
-    return NextResponse.json({ path: publicPath, fileName });
+    return NextResponse.json({
+      path: result.secure_url,
+      fileName: result.public_id.split("/").pop(),
+      width: result.width,
+      height: result.height,
+    });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
       { error: "حدث خطأ أثناء رفع الملف" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE endpoint to remove image from Cloudinary
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const publicId = searchParams.get("publicId");
+
+    if (!publicId) {
+      return NextResponse.json({ error: "معرف الملف مطلوب" }, { status: 400 });
+    }
+
+    // Extract public_id from full URL
+    const fullPublicId = `brivia/products/${publicId}`;
+    
+    await cloudinary.uploader.destroy(fullPublicId);
+    
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Delete error:", error);
+    return NextResponse.json(
+      { error: "حدث خطأ أثناء حذف الملف" },
       { status: 500 }
     );
   }

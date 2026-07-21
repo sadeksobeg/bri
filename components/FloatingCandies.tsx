@@ -158,8 +158,8 @@ function FloatingCandy({ candy }: { candy: Candy }) {
       duration: candy.duration,
       delay: candy.delay,
       repeat: Infinity,
-      ease: "easeInOut",
-      times: [0, 0.25, 0.5, 0.75, 1],
+      ease: "easeInOut" as const,
+      times: [0, 0.25, 0.5, 0.75, 1] as [number, number, number, number, number],
     },
   };
 
