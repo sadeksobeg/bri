@@ -236,7 +236,7 @@ model Product {
 - **الشعار**: صورة متحركة دائرية
 - **حقل كلمة المرور**: مع أيقونة القفل وزر إظهار/إخفاء
 - **زر الدخول**: تدرج navy مع تأثير shine
-- **التحقق**: كلمة المرور = `brivia2024`
+- **التحقق**: كلمة المرور = `***`
 
 ---
 
@@ -391,7 +391,7 @@ model Product {
 #### `/api/admin/login` (POST)
 ```json
 // Request
-{ "password": "brivia2024" }
+{ "password": "***" }
 
 // Success Response
 { "success": true }
@@ -473,7 +473,7 @@ model Product {
 ### 6.3 متغيرات البيئة
 
 ```env
-ADMIN_PASSWORD=brivia2024
+# ADMIN_PASSWORD=<set-in-netlify-dashboard>
 ADMIN_SECRET=<jwt-secret>
 DATABASE_URL="file:./dev.db"
 ```

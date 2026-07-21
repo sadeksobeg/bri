@@ -76,7 +76,7 @@ CLOUDINARY_API_SECRET=<your-api-secret>
 
 # Admin (غيّر هذه القيم!)
 ADMIN_SECRET=<generate-a-32-char-random-string>
-ADMIN_PASSWORD=brivia2024
+# ADMIN_PASSWORD=<set-in-netlify-dashboard>
 ```
 
 ## لإنشاء مفتاح ADMIN_SECRET آمن:

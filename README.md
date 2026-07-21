@@ -37,11 +37,8 @@ npm run dev
 
 ### كلمة مرور الأدمن
 
-الافتراضية: `brivia2024`
-
-يمكن تغييرها في ملف `.env`:
-
-```
+تعيين في Netlify Dashboard أو ملف `.env`:
+```bash
 ADMIN_PASSWORD=your-secret-password
 ```
 
@@ -64,7 +61,7 @@ ADMIN_PASSWORD=your-secret-password
 
 | المتغير | الوصف | الافتراضي |
 |---------|--------|-----------|
-| `ADMIN_PASSWORD` | كلمة مرور الأدمن | `brivia2024` |
+| `ADMIN_PASSWORD` | كلمة مرور الأدمن | `***` (في Netlify) |
 | `ADMIN_SECRET` | مفتاح توقيع JWT | — |
 | `WHATSAPP_NUMBER` | رقم الواتساب | `963995939432` |
 | `DATABASE_URL` | مسار قاعدة البيانات | `file:./dev.db` |
