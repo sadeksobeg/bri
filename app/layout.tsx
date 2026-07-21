@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Amiri, Tajawal } from "next/font/google";
 import "./globals.css";
+import FloatingCandies from "@/components/FloatingCandies";
 
 const amiri = Amiri({
   subsets: ["arabic", "latin"],
@@ -88,6 +89,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
       <body className="min-h-screen antialiased font-[family-name:var(--font-tajawal)] bg-cream text-navy">
+        <FloatingCandies />
         {children}
       </body>
     </html>
