@@ -119,20 +119,6 @@ export default function Footer() {
                   </a>
                 </motion.li>
               ))}
-              <motion.li
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4 }}
-              >
-                <Link
-                  href="/admin"
-                  className="group inline-flex items-center gap-2 text-sm text-cream/60 transition-all duration-300 hover:text-gold"
-                >
-                  <span className="h-1 w-1 rounded-full bg-gold/50 transition-all duration-300 group-hover:w-3 group-hover:bg-gold" />
-                  لوحة الإدارة
-                </Link>
-              </motion.li>
             </ul>
           </motion.div>
 
@@ -162,7 +148,7 @@ export default function Footer() {
                   </div>
                   <div>
                     <p className="text-xs text-cream/50">واتساب</p>
-                    <p className="text-sm font-medium text-gold">0995 939 432</p>
+                    <p className="text-sm font-medium text-gold">‎0963 995 939 432</p>
                   </div>
                 </a>
               </li>

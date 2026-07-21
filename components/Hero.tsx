@@ -2,33 +2,8 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
-
-interface FloatingDot {
-  id: number;
-  x: number;
-  y: number;
-  size: number;
-  duration: number;
-  delay: number;
-}
 
 export default function Hero() {
-  const [dots, setDots] = useState<FloatingDot[]>([]);
-
-  useEffect(() => {
-    // Reduced from 30 to just 8 subtle ambient dots
-    const newDots: FloatingDot[] = Array.from({ length: 8 }, (_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 3 + 2,
-      duration: Math.random() * 8 + 12,
-      delay: Math.random() * 5,
-    }));
-    setDots(newDots);
-  }, []);
-
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -55,59 +30,7 @@ export default function Hero() {
   return (
     <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-navy py-16 sm:py-28">
       {/* Background */}
-      <div className="absolute inset-0">
-        {/* Subtle gradient mesh */}
-        <div className="absolute inset-0 bg-gradient-radial-gold opacity-[0.06]" />
-        
-        {/* Fine grid pattern - subtle and refined */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: `
-            linear-gradient(rgba(201, 169, 97, 0.4) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(201, 169, 97, 0.4) 1px, transparent 1px)
-          `,
-          backgroundSize: '120px 120px'
-        }} />
-      </div>
-
-      {/* Ambient floating dots - only animation element */}
-      <div className="particles-container opacity-40">
-        {dots.map((dot) => (
-          <motion.div
-            key={dot.id}
-            style={{
-              left: `${dot.x}%`,
-              top: `${dot.y}%`,
-              width: dot.size,
-              height: dot.size,
-            }}
-            animate={{
-              y: [0, -30, 0],
-              opacity: [0.15, 0.4, 0.15],
-            }}
-            transition={{
-              duration: dot.duration,
-              delay: dot.delay,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            className="particle"
-          />
-        ))}
-      </div>
-
-      {/* Single elegant rotating ring */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-          className="absolute top-1/2 left-1/2 h-[700px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gold/[0.06]"
-        />
-      </div>
-
-      {/* Central ambient glow - subtle and fixed */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <div className="h-[500px] w-[500px] rounded-full bg-gradient-radial-gold opacity-[0.08] blur-[120px]" />
-      </div>
+      <div className="absolute inset-0 bg-gradient-radial-gold opacity-[0.06]" />
 
       {/* Main Content */}
       <motion.div
@@ -239,23 +162,6 @@ export default function Hero() {
           </span>
         </motion.div>
       </motion.div>
-
-      {/* Bottom subtle wave */}
-      <div className="absolute bottom-0 left-0 right-0">
-        <svg viewBox="0 0 1440 80" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full">
-          <path
-            d="M0 80L60 70C120 60 240 40 360 35C480 30 600 35 720 40C840 45 960 50 1080 50C1200 50 1320 45 1380 42L1440 40V80H1380C1320 80 1200 80 1080 80C960 80 840 80 720 80C600 80 480 80 360 80C240 80 120 80 60 80H0Z"
-            fill="url(#hero-cream)"
-            fillOpacity="0.08"
-          />
-          <defs>
-            <linearGradient id="hero-cream" x1="720" y1="0" x2="720" y2="80" gradientUnits="userSpaceOnUse">
-              <stop stopColor="#c9a961"/>
-              <stop offset="1" stopColor="#c9a961" stopOpacity="0"/>
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
     </section>
   );
 }
