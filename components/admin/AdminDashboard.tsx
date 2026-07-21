@@ -94,11 +94,13 @@ function DeleteConfirmModal({
 
 function SortableRow({
   product,
+  index,
   onEdit,
   onDelete,
   onToggleActive,
 }: {
   product: ProductDTO;
+  index: number;
   onEdit: (p: ProductDTO) => void;
   onDelete: (id: string, name: string) => void;
   onToggleActive: (id: string, current: boolean) => void;
