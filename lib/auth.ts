@@ -6,7 +6,13 @@ const COOKIE_NAME = "brivia_admin_session";
 const SALT_ROUNDS = 12;
 
 function getSecretKey(): Uint8Array {
-  const secret = process.env.ADMIN_SECRET ?? "brivia-super-secret-key-change-in-production";
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) {
+    throw new Error("ADMIN_SECRET environment variable is not set. This is required for production.");
+  }
+  if (secret.length < 32) {
+    throw new Error("ADMIN_SECRET must be at least 32 characters long.");
+  }
   return new TextEncoder().encode(secret);
 }
 
