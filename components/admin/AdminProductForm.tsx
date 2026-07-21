@@ -3,11 +3,12 @@
 import { FormEvent, useState } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import type { ProductDTO } from "@/lib/types";
+import type { ProductDTO, CategoryDTO } from "@/lib/types";
 import type { ProductOptionGroup } from "@/lib/whatsapp";
 
 type Props = {
   product?: ProductDTO | null;
+  categories: CategoryDTO[];
   onSaved: () => void;
   onCancel: () => void;
 };
@@ -21,13 +22,19 @@ function parseOptions(json: string): ProductOptionGroup[] {
   }
 }
 
-export default function AdminProductForm({ product, onSaved, onCancel }: Props) {
+export default function AdminProductForm({ product, categories, onSaved, onCancel }: Props) {
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
   const [price, setPrice] = useState(product?.price?.toString() || "");
-  const [category, setCategory] = useState(product?.category || "شوكولاتة");
+  const [weight, setWeight] = useState(product?.weight || "");
+  const [pieces, setPieces] = useState(product?.pieces?.toString() || "");
+  const [ingredients, setIngredients] = useState(product?.ingredients || "");
+  const [wholesalePrice, setWholesalePrice] = useState(product?.wholesalePrice?.toString() || "");
+  const [discount, setDiscount] = useState(product?.discount?.toString() || "0");
+  const [category, setCategory] = useState(product?.category || (categories[0]?.name || "شوكولاتة"));
   const [sortOrder, setSortOrder] = useState(product?.sortOrder?.toString() || "0");
   const [isActive, setIsActive] = useState(product?.isActive ?? true);
+  const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false);
   const [options, setOptions] = useState<ProductOptionGroup[]>(
     product ? parseOptions(product.options) : [{ name: "الحجم", values: ["250غ", "500غ"] }]
   );
@@ -64,13 +71,11 @@ export default function AdminProductForm({ product, onSaved, onCancel }: Props) 
     e.preventDefault();
     setError("");
 
-    // Validate name
     if (!name.trim()) {
       setError("اسم المنتج مطلوب");
       return;
     }
 
-    // Validate price
     const priceNum = parseFloat(price);
     if (!price || isNaN(priceNum) || priceNum < 0) {
       setError("السعر يجب أن يكون رقماً موجباً");
@@ -84,9 +89,15 @@ export default function AdminProductForm({ product, onSaved, onCancel }: Props) 
       formData.set("name", name);
       formData.set("description", description);
       formData.set("price", price);
+      formData.set("weight", weight);
+      formData.set("pieces", pieces);
+      formData.set("ingredients", ingredients);
+      formData.set("wholesalePrice", wholesalePrice);
+      formData.set("discount", discount);
       formData.set("category", category);
       formData.set("sortOrder", sortOrder);
       formData.set("isActive", String(isActive));
+      formData.set("isFeatured", String(isFeatured));
       formData.set(
         "options",
         JSON.stringify(
@@ -123,7 +134,7 @@ export default function AdminProductForm({ product, onSaved, onCancel }: Props) 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="mx-auto max-w-3xl"
+      className="mx-auto max-w-4xl"
     >
       {/* Header */}
       <div className="mb-8">
@@ -143,21 +154,14 @@ export default function AdminProductForm({ product, onSaved, onCancel }: Props) 
           transition={{ delay: 0.1 }}
           className="rounded-3xl border border-gold/10 bg-white p-6 shadow-soft"
         >
-          <h4 className="mb-4 flex items-center gap-2 font-medium text-navy border-r-2 border-gold/30 pr-3">
+          <h4 className="mb-4 flex items-center gap-2 border-r-2 border-gold/30 pr-3 font-medium text-navy">
             صورة المنتج
           </h4>
           
           <div className="flex flex-col items-center gap-6 sm:flex-row">
-            {/* Image Preview */}
             <div className="relative h-40 w-40 shrink-0 overflow-hidden rounded-2xl border-2 border-dashed border-gold/30 bg-cream transition-all hover:border-gold">
               {imagePreview ? (
-                <Image
-                  src={imagePreview}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                  sizes="160px"
-                />
+                <Image src={imagePreview} alt="Preview" fill className="object-cover" sizes="160px" />
               ) : (
                 <div className="flex h-full w-full flex-col items-center justify-center text-navy/30">
                   <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -168,7 +172,6 @@ export default function AdminProductForm({ product, onSaved, onCancel }: Props) 
               )}
             </div>
             
-            {/* Upload Button */}
             <div className="flex-1">
               <input
                 type="file"
@@ -200,15 +203,13 @@ export default function AdminProductForm({ product, onSaved, onCancel }: Props) 
           transition={{ delay: 0.15 }}
           className="rounded-3xl border border-gold/10 bg-white p-6 shadow-soft"
         >
-          <h4 className="mb-6 flex items-center gap-2 font-medium text-navy border-r-2 border-gold/30 pr-3">
+          <h4 className="mb-6 flex items-center gap-2 border-r-2 border-gold/30 pr-3 font-medium text-navy">
             المعلومات الأساسية
           </h4>
 
           <div className="space-y-5">
             <div>
-              <label className="mb-2 block text-sm font-medium text-navy">
-                اسم المنتج
-              </label>
+              <label className="mb-2 block text-sm font-medium text-navy">اسم المنتج</label>
               <input
                 required
                 value={name}
@@ -235,12 +236,13 @@ export default function AdminProductForm({ product, onSaved, onCancel }: Props) 
               />
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-3">
+            {/* Prices Row */}
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <label className="mb-2 block text-sm font-medium text-navy">
                   <span className="flex items-center gap-2">
                     <span className="h-1 w-1 rounded-full bg-gold/60" />
-                    السعر (ل.س)
+                    السعر الأساسي (ل.س)
                   </span>
                 </label>
                 <input
@@ -258,23 +260,88 @@ export default function AdminProductForm({ product, onSaved, onCancel }: Props) 
                 <label className="mb-2 block text-sm font-medium text-navy">
                   <span className="flex items-center gap-2">
                     <span className="h-1 w-1 rounded-full bg-gold/60" />
-                    التصنيف
+                    سعر الجملة (ل.س)
                   </span>
                 </label>
                 <input
-                  required
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  list="categories"
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={wholesalePrice}
+                  onChange={(e) => setWholesalePrice(e.target.value)}
+                  placeholder="اختياري"
                   className="input-premium"
                 />
-                <datalist id="categories">
-                  <option value="شوكولاتة" />
-                  <option value="علب" />
-                  <option value="هدايا" />
-                  <option value="ترافل" />
-                  <option value="كيك" />
-                </datalist>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-navy">
+                  <span className="flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-gold/60" />
+                    التخفيض (%)
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={discount}
+                  onChange={(e) => setDiscount(e.target.value)}
+                  className="input-premium"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-navy">
+                  <span className="flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-gold/60" />
+                    التصنيف
+                  </span>
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="input-premium"
+                >
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.name}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Details Row */}
+            <div className="grid gap-5 sm:grid-cols-3">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-navy">
+                  <span className="flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-gold/60" />
+                    الوزن
+                  </span>
+                </label>
+                <input
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  placeholder="مثال: 250غ"
+                  className="input-premium"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-navy">
+                  <span className="flex items-center gap-2">
+                    <span className="h-1 w-1 rounded-full bg-gold/60" />
+                    عدد القطع
+                  </span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={pieces}
+                  onChange={(e) => setPieces(e.target.value)}
+                  placeholder="مثال: 12"
+                  className="input-premium"
+                />
               </div>
 
               <div>
@@ -293,25 +360,63 @@ export default function AdminProductForm({ product, onSaved, onCancel }: Props) 
               </div>
             </div>
 
-            {/* Active Toggle */}
-            <div className="flex items-center justify-between rounded-xl border border-gold/10 bg-gold/5 p-4">
-              <div>
-                <p className="font-medium text-navy">حالة المنتج</p>
-                <p className="text-xs text-navy/50">هل يظهر المنتج في الموقع؟</p>
+            <div>
+              <label className="mb-2 block text-sm font-medium text-navy">
+                <span className="flex items-center gap-2">
+                  <span className="h-1 w-1 rounded-full bg-gold/60" />
+                  المكونات (اختياري)
+                </span>
+              </label>
+              <textarea
+                rows={2}
+                value={ingredients}
+                onChange={(e) => setIngredients(e.target.value)}
+                placeholder="مثال: كاكاو، سكر، زبدة..."
+                className="input-premium resize-none"
+              />
+            </div>
+
+            {/* Toggles */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="flex items-center justify-between rounded-xl border border-gold/10 bg-gold/5 p-4">
+                <div>
+                  <p className="font-medium text-navy">حالة المنتج</p>
+                  <p className="text-xs text-navy/50">هل يظهر المنتج في الموقع؟</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsActive(!isActive)}
+                  className={`relative h-8 w-14 rounded-full transition-colors duration-300 ${
+                    isActive ? "bg-green-500" : "bg-gray-300"
+                  }`}
+                >
+                  <motion.span
+                    animate={{ x: isActive ? 28 : 4 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className="absolute top-1 h-6 w-6 rounded-full bg-white shadow-md"
+                  />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setIsActive(!isActive)}
-                className={`relative h-8 w-14 rounded-full transition-colors duration-300 ${
-                  isActive ? "bg-green-500" : "bg-gray-300"
-                }`}
-              >
-                <motion.span
-                  animate={{ x: isActive ? 28 : 4 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  className="absolute top-1 h-6 w-6 rounded-full bg-white shadow-md"
-                />
-              </button>
+
+              <div className="flex items-center justify-between rounded-xl border border-gold/10 bg-gold/5 p-4">
+                <div>
+                  <p className="font-medium text-navy">منتج مميز</p>
+                  <p className="text-xs text-navy/50">يظهر في أعلى القائمة</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsFeatured(!isFeatured)}
+                  className={`relative h-8 w-14 rounded-full transition-colors duration-300 ${
+                    isFeatured ? "bg-gold" : "bg-gray-300"
+                  }`}
+                >
+                  <motion.span
+                    animate={{ x: isFeatured ? 28 : 4 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className="absolute top-1 h-6 w-6 rounded-full bg-white shadow-md"
+                  />
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -324,7 +429,7 @@ export default function AdminProductForm({ product, onSaved, onCancel }: Props) 
           className="rounded-3xl border border-gold/10 bg-white p-6 shadow-soft"
         >
           <div className="mb-6 flex items-center justify-between">
-            <h4 className="flex items-center gap-2 font-medium text-navy border-r-2 border-gold/30 pr-3">
+            <h4 className="flex items-center gap-2 border-r-2 border-gold/30 pr-3 font-medium text-navy">
               خيارات المنتج
             </h4>
             <button

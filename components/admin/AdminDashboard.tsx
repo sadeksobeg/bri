@@ -23,7 +23,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import AdminProductForm from "./AdminProductForm";
-import type { ProductDTO } from "@/lib/types";
+import CategoryManager from "./CategoryManager";
+import type { ProductDTO, CategoryDTO } from "@/lib/types";
+
+type Tab = "products" | "categories";
 
 function DeleteConfirmModal({
   productName,
@@ -64,9 +67,7 @@ function DeleteConfirmModal({
           </div>
         </div>
         <div className="p-6">
-          <p className="text-center text-navy/70">
-            هل أنت متأكد من حذف المنتج:
-          </p>
+          <p className="text-center text-navy/70">هل أنت متأكد من حذف المنتج:</p>
           <p className="mt-2 text-center font-[family-name:var(--font-amiri)] text-lg font-bold text-navy">
             {productName}
           </p>
@@ -94,13 +95,11 @@ function DeleteConfirmModal({
 
 function SortableRow({
   product,
-  index,
   onEdit,
   onDelete,
   onToggleActive,
 }: {
   product: ProductDTO;
-  index: number;
   onEdit: (p: ProductDTO) => void;
   onDelete: (id: string, name: string) => void;
   onToggleActive: (id: string, current: boolean) => void;
@@ -147,6 +146,11 @@ function SortableRow({
               className="object-cover"
               sizes="56px"
             />
+            {product.isFeatured && (
+              <div className="absolute -right-1 -top-1 rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-navy">
+                مميز
+              </div>
+            )}
           </div>
           <div>
             <p className="font-medium text-navy">{product.name}</p>
@@ -161,10 +165,13 @@ function SortableRow({
         </span>
       </td>
       <td className="px-4 py-4">
-        <span className="font-[family-name:var(--font-amiri)] text-base font-bold text-gold-dark">
+        <div className="font-[family-name:var(--font-amiri)] text-base font-bold text-gold-dark">
           {product.price.toLocaleString("en-US")}
-        </span>
-        <span className="mr-1 text-xs text-navy/40">ل.س</span>
+        </div>
+        <div className="text-xs text-navy/40">
+          {product.weight && <span> {product.weight}</span>}
+          {product.pieces && <span> • {product.pieces} قطعة</span>}
+        </div>
       </td>
       <td className="px-4 py-4">
         <div className="flex items-center justify-center gap-2">
@@ -220,7 +227,9 @@ function SortableRow({
 
 export default function AdminDashboard() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<Tab>("products");
   const [products, setProducts] = useState<ProductDTO[]>([]);
+  const [categories, setCategories] = useState<CategoryDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductDTO | null>(null);
@@ -229,7 +238,6 @@ export default function AdminDashboard() {
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
 
   const fetchProducts = useCallback(async () => {
-    setLoading(true);
     try {
       const res = await fetch("/api/admin/products");
       if (res.status === 401) {
@@ -240,14 +248,33 @@ export default function AdminDashboard() {
       setProducts(Array.isArray(data) ? data : []);
     } catch {
       setProducts([]);
-    } finally {
-      setLoading(false);
     }
   }, [router]);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      // Try to init categories first
+      await fetch("/api/admin/categories/init", { method: "POST" });
+      
+      const res = await fetch("/api/admin/categories");
+      if (res.ok) {
+        const data = await res.json();
+        setCategories(Array.isArray(data) ? data : []);
+      }
+    } catch {
+      setCategories([]);
+    }
+  }, []);
+
+  const fetchAll = useCallback(async () => {
+    setLoading(true);
+    await Promise.all([fetchProducts(), fetchCategories()]);
+    setLoading(false);
+  }, [fetchProducts, fetchCategories]);
+
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    fetchAll();
+  }, [fetchAll]);
 
   async function handleLogout() {
     await fetch("/api/admin/login", { method: "DELETE" });
@@ -303,26 +330,18 @@ export default function AdminDashboard() {
   }
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
-
     if (over && active.id !== over.id) {
       const oldIndex = products.findIndex((p) => p.id === active.id);
       const newIndex = products.findIndex((p) => p.id === over.id);
       const reorderedProducts = arrayMove(products, oldIndex, newIndex);
       setProducts(reorderedProducts);
 
-      // Update sortOrder for all products
       await Promise.all(
         reorderedProducts.map((p, index) =>
           fetch(`/api/admin/products/${p.id}`, {
@@ -335,7 +354,7 @@ export default function AdminDashboard() {
     }
   }
 
-  const categories = useMemo(() => {
+  const productCategories = useMemo(() => {
     const cats = Array.from(new Set(products.map((p) => p.category)));
     return ["الكل", ...cats];
   }, [products]);
@@ -368,6 +387,7 @@ export default function AdminDashboard() {
         )}
       </AnimatePresence>
 
+      {/* Header */}
       <motion.header
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -385,7 +405,7 @@ export default function AdminDashboard() {
               <h1 className="font-[family-name:var(--font-amiri)] text-xl font-bold text-gold">
                 لوحة إدارة BRIVIA
               </h1>
-              <p className="text-xs text-cream/50">إدارة المنتجات</p>
+              <p className="text-xs text-cream/50">إدارة المنتجات والتصنيفات</p>
             </div>
           </div>
 
@@ -415,6 +435,51 @@ export default function AdminDashboard() {
             </motion.button>
           </div>
         </div>
+
+        {/* Tabs */}
+        <div className="mx-auto flex max-w-7xl px-4 sm:px-6">
+          <button
+            type="button"
+            onClick={() => setActiveTab("products")}
+            className={`relative px-6 py-3 text-sm font-medium transition-colors ${
+              activeTab === "products" ? "text-gold" : "text-cream/50 hover:text-cream/70"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+              المنتجات ({products.length})
+            </span>
+            {activeTab === "products" && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold"
+              />
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("categories")}
+            className={`relative px-6 py-3 text-sm font-medium transition-colors ${
+              activeTab === "categories" ? "text-gold" : "text-cream/50 hover:text-cream/70"
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+              التصنيفات ({categories.length})
+            </span>
+            {activeTab === "categories" && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-gold"
+              />
+            )}
+          </button>
+        </div>
       </motion.header>
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
@@ -429,269 +494,268 @@ export default function AdminDashboard() {
             >
               <AdminProductForm
                 product={editingProduct}
+                categories={categories}
                 onSaved={handleSaved}
                 onCancel={handleCancel}
               />
             </motion.div>
           ) : (
-            <motion.div
-              key="list"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-8 flex flex-wrap items-center justify-between gap-4"
-              >
-                <div>
-                  <h2 className="font-[family-name:var(--font-heading)] font-bold text-navy" style={{ fontSize: 'var(--text-h1)' }}>
-                    المنتجات
-                  </h2>
-                  <p className="mt-1 flex items-center gap-2 text-sm text-navy/50">
-                    <span className="h-2 w-2 rounded-full bg-gold" />
-                    {filteredProducts.length} منتج
-                    {filteredProducts.length !== products.length && (
-                      <span className="text-gold">(من {products.length})</span>
-                    )}
-                  </p>
-                </div>
-
-                <motion.button
-                  type="button"
-                  onClick={handleAdd}
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="group relative flex items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-navy to-navy-light px-6 py-3 text-sm font-medium text-gold shadow-lg shadow-navy/30 transition-all duration-300 hover:shadow-xl"
-                >
-                  <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-                  <svg className="relative h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span className="relative">إضافة منتج</span>
-                </motion.button>
-              </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 }}
-                className="mb-6 flex flex-wrap gap-4"
-              >
-                <div className="relative flex-1 min-w-[200px]">
-                  <svg className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-navy/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                  <input
-                    type="text"
-                    placeholder="ابحث عن منتج..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full rounded-xl border border-gold/20 bg-white px-12 py-3 text-sm text-navy outline-none transition-all duration-300 focus:border-gold focus:shadow-lg focus:shadow-gold/10"
-                  />
-                  {searchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => setSearchQuery("")}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-navy/30 hover:text-navy"
+            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {activeTab === "products" && (
+                <>
+                  {/* Stats Cards */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                    className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4"
+                  >
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.1 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      className="rounded-2xl border border-gold/10 bg-white p-4 shadow-soft transition-all duration-300 hover:shadow-gold/10"
                     >
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  )}
-                </div>
-                <select
-                  value={categoryFilter}
-                  onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="rounded-xl border border-gold/20 bg-white px-5 py-3 text-sm text-navy outline-none transition-all duration-300 focus:border-gold"
-                >
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-              </motion.div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold">
+                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-xs text-navy/50">إجمالي المنتجات</p>
+                          <p className="font-[family-name:var(--font-amiri)] text-xl font-bold text-navy">{products.length}</p>
+                        </div>
+                      </div>
+                    </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4"
-              >
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.1 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  className="rounded-2xl border border-gold/10 bg-white p-4 shadow-soft transition-all duration-300 hover:shadow-gold/10"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold">
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-navy/50">إجمالي المنتجات</p>
-                      <p className="font-[family-name:var(--font-amiri)] text-xl font-bold text-navy">{products.length}</p>
-                    </div>
-                  </div>
-                </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.15 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      className="rounded-2xl border border-gold/10 bg-white p-4 shadow-soft transition-all duration-300 hover:shadow-gold/10"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/10 text-green-500">
+                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-xs text-navy/50">المنتجات الظاهرة</p>
+                          <p className="font-[family-name:var(--font-amiri)] text-xl font-bold text-navy">{products.filter(p => p.isActive).length}</p>
+                        </div>
+                      </div>
+                    </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.15 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  className="rounded-2xl border border-gold/10 bg-white p-4 shadow-soft transition-all duration-300 hover:shadow-gold/10"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold">
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-navy/50">المنتجات الظاهرة</p>
-                      <p className="font-[family-name:var(--font-amiri)] text-xl font-bold text-navy">{products.filter(p => p.isActive).length}</p>
-                    </div>
-                  </div>
-                </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.2 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      className="rounded-2xl border border-gold/10 bg-white p-4 shadow-soft transition-all duration-300 hover:shadow-gold/10"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-500/10 text-purple-500">
+                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-xs text-navy/50">التصنيفات</p>
+                          <p className="font-[family-name:var(--font-amiri)] text-xl font-bold text-navy">{new Set(products.map(p => p.category)).size}</p>
+                        </div>
+                      </div>
+                    </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.2 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  className="rounded-2xl border border-gold/10 bg-white p-4 shadow-soft transition-all duration-300 hover:shadow-gold/10"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold">
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p className="text-xs text-navy/50">التصنيفات</p>
-                      <p className="font-[family-name:var(--font-amiri)] text-xl font-bold text-navy">{new Set(products.map(p => p.category)).size}</p>
-                    </div>
-                  </div>
-                </motion.div>
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: 0.25 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      className="rounded-2xl border border-gold/10 bg-white p-4 shadow-soft transition-all duration-300 hover:shadow-gold/10"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold">
+                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-xs text-navy/50">متوسط السعر</p>
+                          <p className="font-[family-name:var(--font-amiri)] text-xl font-bold text-navy">
+                            {products.length ? Math.round(products.reduce((acc, p) => acc + p.price, 0) / products.length).toLocaleString("en-US") : 0}
+                            <span className="mr-1 text-xs font-normal text-navy/50">ل.س</span>
+                          </p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
 
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.25 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  className="rounded-2xl border border-gold/10 bg-white p-4 shadow-soft transition-all duration-300 hover:shadow-gold/10"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold">
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
+                  {/* Header & Actions */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-8 flex flex-wrap items-center justify-between gap-4"
+                  >
                     <div>
-                      <p className="text-xs text-navy/50">متوسط السعر</p>
-                      <p className="font-[family-name:var(--font-amiri)] text-xl font-bold text-navy">
-                        {products.length ? Math.round(products.reduce((acc, p) => acc + p.price, 0) / products.length).toLocaleString("en-US") : 0}
-                        <span className="mr-1 text-xs font-normal text-navy/50">ل.س</span>
+                      <h2 className="font-[family-name:var(--font-heading)] font-bold text-navy" style={{ fontSize: 'var(--text-h1)' }}>
+                        المنتجات
+                      </h2>
+                      <p className="mt-1 flex items-center gap-2 text-sm text-navy/50">
+                        <span className="h-2 w-2 rounded-full bg-gold" />
+                        {filteredProducts.length} منتج
+                        {filteredProducts.length !== products.length && (
+                          <span className="text-gold">(من {products.length})</span>
+                        )}
                       </p>
                     </div>
-                  </div>
-                </motion.div>
-              </motion.div>
 
-              {loading ? (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="flex items-center justify-center py-20"
-                >
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    className="h-12 w-12 rounded-full border-4 border-gold/20 border-t-gold"
-                  />
-                </motion.div>
-              ) : filteredProducts.length === 0 ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-navy/20 bg-white py-20"
-                >
-                  <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-navy/5">
-                    <svg className="h-10 w-10 text-navy/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
-                  </div>
-                  <p className="text-lg font-medium text-navy/50">
-                    {searchQuery || categoryFilter !== "الكل"
-                      ? "لا توجد نتائج مطابقة"
-                      : "لا توجد منتجات بعد"}
-                  </p>
-                  <p className="mt-2 text-sm text-navy/30">
-                    {searchQuery || categoryFilter !== "الكل"
-                      ? "جرب تغيير كلمات البحث أو الفلتر"
-                      : "ابدأ بإضافة أول منتج"}
-                  </p>
-                  {(searchQuery || categoryFilter !== "الكل") && (
-                    <button
+                    <motion.button
                       type="button"
-                      onClick={() => { setSearchQuery(""); setCategoryFilter("الكل"); }}
-                      className="mt-6 text-sm font-medium text-gold hover:underline"
+                      onClick={handleAdd}
+                      whileHover={{ scale: 1.05, y: -2 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="group relative flex items-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-navy to-navy-light px-6 py-3 text-sm font-medium text-gold shadow-lg shadow-navy/30 transition-all duration-300 hover:shadow-xl"
                     >
-                      مسح البحث
-                    </button>
-                  )}
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="overflow-hidden rounded-3xl border border-gold/10 bg-white shadow-soft-lg"
-                >
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[900px] text-sm">
-                      <thead>
-                        <tr className="border-b border-gold/10 bg-gradient-to-r from-gold/5 to-transparent">
-                          <th className="px-6 py-4 text-right font-medium text-navy/70">المنتج</th>
-                          <th className="px-4 py-4 text-right font-medium text-navy/70">التصنيف</th>
-                          <th className="px-4 py-4 text-right font-medium text-navy/70">السعر</th>
-                          <th className="px-4 py-4 text-center font-medium text-navy/70">الحالة</th>
-                          <th className="px-4 py-4 text-center font-medium text-navy/70">إجراءات</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <DndContext
-                          sensors={sensors}
-                          collisionDetection={closestCenter}
-                          onDragEnd={handleDragEnd}
+                      <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                      <svg className="relative h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span className="relative">إضافة منتج</span>
+                    </motion.button>
+                  </motion.div>
+
+                  {/* Filters */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                    className="mb-6 flex flex-wrap gap-4"
+                  >
+                    <div className="relative flex-1 min-w-[200px]">
+                      <svg className="absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-navy/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                      <input
+                        type="text"
+                        placeholder="ابحث عن منتج..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full rounded-xl border border-gold/20 bg-white px-12 py-3 text-sm text-navy outline-none transition-all duration-300 focus:border-gold focus:shadow-lg focus:shadow-gold/10"
+                      />
+                      {searchQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setSearchQuery("")}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 text-navy/30 hover:text-navy"
                         >
-                          <SortableContext
-                            items={filteredProducts.map((p) => p.id)}
-                            strategy={verticalListSortingStrategy}
-                          >
-                            {filteredProducts.map((product, index) => (
-                              <SortableRow
-                                key={product.id}
-                                product={product}
-                                index={index}
-                                onEdit={handleEdit}
-                                onDelete={handleDeleteClick}
-                                onToggleActive={handleToggleActive}
-                              />
-                            ))}
-                          </SortableContext>
-                        </DndContext>
-                      </tbody>
-                    </table>
-                  </div>
-                </motion.div>
+                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                    <select
+                      value={categoryFilter}
+                      onChange={(e) => setCategoryFilter(e.target.value)}
+                      className="rounded-xl border border-gold/20 bg-white px-5 py-3 text-sm text-navy outline-none transition-all duration-300 focus:border-gold"
+                    >
+                      {productCategories.map((cat) => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
+                  </motion.div>
+
+                  {/* Products Table */}
+                  {loading ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex items-center justify-center py-20"
+                    >
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="h-12 w-12 rounded-full border-4 border-gold/20 border-t-gold"
+                      />
+                    </motion.div>
+                  ) : filteredProducts.length === 0 ? (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-navy/20 bg-white py-20"
+                    >
+                      <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-navy/5">
+                        <svg className="h-10 w-10 text-navy/20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                        </svg>
+                      </div>
+                      <p className="text-lg font-medium text-navy/50">
+                        {searchQuery || categoryFilter !== "الكل"
+                          ? "لا توجد نتائج مطابقة"
+                          : "لا توجد منتجات بعد"}
+                      </p>
+                      <p className="mt-2 text-sm text-navy/30">
+                        {searchQuery || categoryFilter !== "الكل"
+                          ? "جرب تغيير كلمات البحث أو الفلتر"
+                          : "ابدأ بإضافة أول منتج"}
+                      </p>
+                    </motion.div>
+                  ) : (
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="overflow-hidden rounded-3xl border border-gold/10 bg-white shadow-soft-lg"
+                    >
+                      <div className="overflow-x-auto">
+                        <table className="w-full min-w-[900px] text-sm">
+                          <thead>
+                            <tr className="border-b border-gold/10 bg-gradient-to-r from-gold/5 to-transparent">
+                              <th className="px-6 py-4 text-right font-medium text-navy/70">المنتج</th>
+                              <th className="px-4 py-4 text-right font-medium text-navy/70">التصنيف</th>
+                              <th className="px-4 py-4 text-right font-medium text-navy/70">السعر</th>
+                              <th className="px-4 py-4 text-center font-medium text-navy/70">الحالة</th>
+                              <th className="px-4 py-4 text-center font-medium text-navy/70">إجراءات</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <DndContext
+                              sensors={sensors}
+                              collisionDetection={closestCenter}
+                              onDragEnd={handleDragEnd}
+                            >
+                              <SortableContext
+                                items={filteredProducts.map((p) => p.id)}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                {filteredProducts.map((product) => (
+                                  <SortableRow
+                                    key={product.id}
+                                    product={product}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDeleteClick}
+                                    onToggleActive={handleToggleActive}
+                                  />
+                                ))}
+                              </SortableContext>
+                            </DndContext>
+                          </tbody>
+                        </table>
+                      </div>
+                    </motion.div>
+                  )}
+                </>
+              )}
+
+              {activeTab === "categories" && (
+                <CategoryManager
+                  categories={categories}
+                  onRefresh={fetchCategories}
+                />
               )}
             </motion.div>
           )}

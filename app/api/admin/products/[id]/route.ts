@@ -39,9 +39,15 @@ export async function PUT(request: NextRequest, { params }: Params) {
     const name = String(formData.get("name") || "").trim();
     const description = String(formData.get("description") || "").trim();
     const price = parseFloat(String(formData.get("price") || "0"));
+    const weight = String(formData.get("weight") || "").trim() || null;
+    const pieces = parseInt(String(formData.get("pieces") || ""), 10);
+    const ingredients = String(formData.get("ingredients") || "").trim() || null;
+    const wholesalePrice = parseFloat(String(formData.get("wholesalePrice") || ""));
+    const discount = parseFloat(String(formData.get("discount") || "0"));
     const category = String(formData.get("category") || "").trim();
     const options = String(formData.get("options") || "[]");
     const isActive = formData.get("isActive") !== "false";
+    const isFeatured = formData.get("isFeatured") === "true";
     const sortOrder = parseInt(String(formData.get("sortOrder") || "0"), 10);
     const imageFile = formData.get("image") as File | null;
 
@@ -71,10 +77,16 @@ export async function PUT(request: NextRequest, { params }: Params) {
         name,
         description,
         price,
+        weight,
+        pieces: Number.isNaN(pieces) ? null : pieces,
+        ingredients,
+        wholesalePrice: Number.isNaN(wholesalePrice) ? null : wholesalePrice,
+        discount: Number.isNaN(discount) ? 0 : discount,
         category,
         options,
-        image,
         isActive,
+        isFeatured,
+        image,
         sortOrder: Number.isNaN(sortOrder) ? 0 : sortOrder,
       },
     });
