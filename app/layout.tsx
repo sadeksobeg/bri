@@ -17,14 +17,16 @@ const tajawal = Tajawal({
   display: "swap",
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://brivia.netlify.app";
+
 export const metadata: Metadata = {
-  metadataBase: new URL("https://brivia-syria.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "BRIVIA | حلويات فاخرة",
     template: "%s | BRIVIA",
   },
   description: "BRIVIA — حلويات فاخرة وحرفية. اطلب الآن عبر واتساب. تشكيلة مميزة من الشوكولاتة والعلب والهدايا الفاخرة في سوريا.",
-  keywords: ["حلويات", "شوكولاتة", "هدايا", "علب", "سوريا", "حلويات فاخرة", "بريڤيا", "BRIVIA", "confectionery", "luxury chocolate"],
+  keywords: ["حلويات", "شوكولاتة", "هدايا", "علب", "سوريا", "حلويات فاخرة", "BRIڤيا", "BRIVIA", "confectionery", "luxury chocolate"],
   authors: [{ name: "BRIVIA" }],
   creator: "BRIVIA",
   publisher: "BRIVIA Premium Confectionery",
@@ -48,7 +50,7 @@ export const metadata: Metadata = {
     description: "تجربة حلوى استثنائية — من الشوكولاتة الحرفية إلى علب الهدايا الفاخرة",
     images: [
       {
-        url: "/brand/og-image.jpg",
+        url: `${SITE_URL}/brand/og-image.jpg`,
         width: 1200,
         height: 630,
         alt: "BRIVIA - Premium Confectionery",
@@ -59,7 +61,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BRIVIA | حلويات فاخرة",
     description: "تجربة حلوى استثنائية — من الشوكولاتة الحرفية إلى علب الهدايا الفاخرة",
-    images: ["/brand/og-image.jpg"],
+    images: [`${SITE_URL}/brand/og-image.jpg`],
   },
   icons: {
     icon: "/icon.png",
@@ -77,6 +79,32 @@ export const viewport: Viewport = {
   maximumScale: 5,
 };
 
+// Structured Data for SEO
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "Store",
+  name: "BRIVIA - حلويات فاخرة",
+  description: "تجربة حلوى استثنائية — من الشوكولاتة الحرفية إلى علب الهدايا الفاخرة",
+  url: SITE_URL,
+  telephone: "+963-995-939-432",
+  image: `${SITE_URL}/brand/og-image.jpg`,
+  address: {
+    "@type": "PostalAddress",
+    addressCountry: "SY",
+  },
+  openingHoursSpecification: {
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    opens: "09:00",
+    closes: "22:00",
+  },
+  sameAs: [
+    "https://www.instagram.com/brivia",
+    "https://wa.me/963995939432",
+  ],
+  priceRange: "$$",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -87,6 +115,11 @@ export default function RootLayout({
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://res.cloudinary.com" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
       </head>
       <body className="min-h-screen antialiased font-[family-name:var(--font-tajawal)] bg-cream text-navy">
         <FloatingCandies />
