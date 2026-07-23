@@ -1,3 +1,4 @@
+import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ProductGrid from "@/components/ProductGrid";
 import AboutSection from "@/components/AboutSection";
@@ -43,6 +44,7 @@ export default async function HomePage() {
     <>
       <main>
         <Hero />
+        <Header />
         <ProductGrid products={products} />
         <AboutSection />
       </main>
