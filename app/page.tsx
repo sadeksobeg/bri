@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import ShowcaseSection from "@/components/ShowcaseSection";
 import ProductGrid from "@/components/ProductGrid";
 import AboutSection from "@/components/AboutSection";
 import Footer from "@/components/Footer";
@@ -45,6 +46,7 @@ export default async function HomePage() {
       <Header />
       <main>
         <Hero />
+        <ShowcaseSection />
         <ProductGrid products={products} />
         <AboutSection />
       </main>
