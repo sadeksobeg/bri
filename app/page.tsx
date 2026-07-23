@@ -45,7 +45,6 @@ export default async function HomePage() {
       <Header />
       <main>
         <Hero />
-        <ShowcaseSection />
         <ProductGrid products={products} />
         <AboutSection />
       </main>
