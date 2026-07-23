@@ -237,7 +237,7 @@ export default function Hero() {
             <div className="overflow-hidden">
               <motion.div initial={{ y: 100, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.8, delay: 0.2 }}>
                 <h1 className="text-[#d4af37] font-['Amiri'] text-7xl font-bold tracking-[0.15em] xl:text-8xl drop-shadow-[0_0_30px_rgba(212,175,55,0.5)]">
-                  BRIڤيا
+                  BRIVIA
                 </h1>
               </motion.div>
             </div>
@@ -338,7 +338,7 @@ export default function Hero() {
           <div className="bg-gradient-to-t from-[#0b1a3d] via-[#0b1a3d]/95 to-transparent p-5 pt-20">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="text-center">
               <h1 className="text-[#d4af37] font-['Amiri'] text-5xl font-bold tracking-[0.1em] drop-shadow-[0_0_20px_rgba(212,175,55,0.4)]">
-                BRIڤيا
+                BRIVIA
               </h1>
               <p className="mt-2 font-['Amiri'] text-lg text-[#f5f5dc]/90">
                 فخامة في كل قطعة
