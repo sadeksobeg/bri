@@ -41,7 +41,6 @@ export default async function HomePage() {
 
   return (
     <>
-      <Header />
       <main>
         <Hero />
         <ProductGrid products={products} />
