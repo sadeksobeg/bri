@@ -85,10 +85,10 @@ export default function ProductCard({ product, index, onOrder }: Props) {
             </p>
 
             {/* Weight & Pieces */}
-            {(product.weight || product.pieces) && (
+            {product.weight && (
               <div className="flex items-center gap-2 text-xs text-navy/50">
-                {product.weight && <span>{product.weight}</span>}
-                {product.weight && product.pieces && <span>•</span>}
+                <span>{product.weight}</span>
+                {product.pieces && <span>•</span>}
                 {product.pieces && <span>{product.pieces} قطعة</span>}
               </div>
             )}
