@@ -114,8 +114,8 @@ export async function GET() {
         data: {
           id: `prod_${Date.now()}_${count}`,
           ...p,
-          isFeatured: p.isFeatured ? 1 : 0,
-          isActive: 1,
+          isFeatured: p.isFeatured === true ? true : false,
+          isActive: true,
         },
       });
       count++;
