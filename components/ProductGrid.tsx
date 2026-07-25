@@ -102,17 +102,6 @@ export default function ProductGrid({ products }: Props) {
           className="mb-12 flex flex-wrap items-center justify-center gap-3"
         >
           {categories.map((cat, index) => {
-            // Color mapping for categories
-            const getCategoryColor = (category: string) => {
-              if (category === "الكل") return { bg: "from-navy to-navy-light", text: "text-gold", border: "border-navy/10" };
-              if (category.includes("شوكولا") || category.includes("شوكولاتة")) return { bg: "from-amber-600 to-amber-800", text: "text-white", border: "border-amber-600" };
-              if (category.includes("معمول") || category.includes("بسكويت")) return { bg: "from-yellow-600 to-orange-600", text: "text-white", border: "border-yellow-600" };
-              if (category.includes("تارت") || category.includes("كاب") || category.includes("حلويات")) return { bg: "from-pink-500 to-rose-600", text: "text-white", border: "border-pink-500" };
-              if (category.includes("بوكس")) return { bg: "from-purple-600 to-violet-700", text: "text-white", border: "border-purple-600" };
-              return { bg: "from-gold to-gold-dark", text: "text-navy", border: "border-gold" };
-            };
-            
-            const colors = getCategoryColor(cat);
             const isSelected = selectedCategory === cat;
             
             return (
@@ -126,15 +115,13 @@ export default function ProductGrid({ products }: Props) {
                 transition={{ delay: 0.1 * index }}
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
-                className={`group relative overflow-hidden rounded-full px-6 py-2.5 text-sm font-medium transition-all duration-300 border ${
+                className={`relative overflow-hidden rounded-full px-6 py-2.5 text-sm font-medium transition-all duration-300 ${
                   isSelected
-                    ? `bg-gradient-to-r ${colors.bg} ${colors.text} shadow-lg`
-                    : `bg-white ${colors.text} ${colors.border} hover:shadow-md`
+                    ? "bg-gradient-to-r from-navy to-navy-light text-gold shadow-lg shadow-navy/30 border border-gold/30"
+                    : "bg-white text-navy border border-gold/20 hover:border-gold hover:shadow-md hover:shadow-gold/10"
                 }`}
               >
-                <span className="relative z-10 flex items-center gap-2">
-                  {cat}
-                </span>
+                <span className="relative z-10">{cat}</span>
               </motion.button>
             );
           })}
