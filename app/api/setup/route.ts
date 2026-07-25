@@ -10,30 +10,43 @@ export async function GET() {
     const adapter = new PrismaLibSql({ url: url!, authToken });
     const prisma = new PrismaClient({ adapter });
 
-    // Create tables
+    // Drop and recreate all tables to ensure correct schema
+    try { await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS Product`); } catch {}
+    try { await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS Category`); } catch {}
+    try { await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS "Order"`); } catch {}
+    try { await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS Admin`); } catch {}
+    try { await prisma.$executeRawUnsafe(`DROP TABLE IF EXISTS Session`); } catch {}
+
+    // Create Product table
     await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS Product (
+      CREATE TABLE Product (
         id TEXT NOT NULL PRIMARY KEY,
         name TEXT NOT NULL,
         description TEXT NOT NULL,
-        price INTEGER NOT NULL,
+        price REAL NOT NULL,
         weight TEXT,
         pieces INTEGER,
-        category TEXT NOT NULL,
+        ingredients TEXT,
+        wholesalePrice REAL,
+        discount REAL NOT NULL DEFAULT 0,
         image TEXT NOT NULL,
+        category TEXT NOT NULL,
+        options TEXT NOT NULL DEFAULT '[]',
         isFeatured INTEGER NOT NULL DEFAULT 0,
         isActive INTEGER NOT NULL DEFAULT 1,
         sortOrder INTEGER NOT NULL DEFAULT 0,
-        options TEXT NOT NULL DEFAULT '[]',
         createdAt TEXT NOT NULL DEFAULT (datetime('now')),
         updatedAt TEXT NOT NULL DEFAULT (datetime('now'))
       )
     `);
-
+    
+    // Create Category table
     await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS Category (
+      CREATE TABLE Category (
         id TEXT NOT NULL PRIMARY KEY,
-        name TEXT NOT NULL,
+        name TEXT NOT NULL UNIQUE,
+        description TEXT,
+        color TEXT NOT NULL DEFAULT '#c9a961',
         icon TEXT,
         sortOrder INTEGER NOT NULL DEFAULT 0,
         isActive INTEGER NOT NULL DEFAULT 1,
