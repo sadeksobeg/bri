@@ -176,7 +176,7 @@ function SortableRow({
       </td>
       <td className="px-4 py-4">
         <div className="font-[family-name:var(--font-amiri)] text-base font-bold text-gold-dark">
-          {product.price.toLocaleString("en-US")}
+          {(product.price ?? 0).toLocaleString("en-US")}
         </div>
         <div className="text-xs text-navy/40">
           {product.weight && <span> {product.weight}</span>}
