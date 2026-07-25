@@ -47,7 +47,7 @@ export default function OrderModal({ product, onClose }: Props) {
   const handleOrder = () => {
     const url = buildWhatsAppUrl({
       productName: product.name,
-      price: product.price,
+      price: product.price ?? 0,
       quantity,
       selectedOptions,
       notes,
