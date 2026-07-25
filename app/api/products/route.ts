@@ -8,7 +8,11 @@ export async function GET() {
     const products = await prisma.product.findMany({
       orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     });
-    return NextResponse.json(products);
+    return NextResponse.json(products.map((p) => ({
+      ...p,
+      isBestSeller: p.isBestSeller ?? false,
+      isNew: p.isNew ?? false,
+    })));
   } catch (error) {
     console.error("GET /api/products:", error);
     return NextResponse.json({ error: "فشل جلب المنتجات" }, { status: 500 });

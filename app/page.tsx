@@ -29,6 +29,8 @@ async function getProducts(): Promise<ProductDTO[]> {
       category: p.category,
       options: p.options,
       isFeatured: p.isFeatured,
+      isBestSeller: p.isBestSeller ?? false,
+      isNew: p.isNew ?? false,
       isActive: p.isActive,
       sortOrder: p.sortOrder,
     }));
