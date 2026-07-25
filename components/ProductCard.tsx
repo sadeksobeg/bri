@@ -11,7 +11,7 @@ type Props = {
 };
 
 export default function ProductCard({ product, index, onOrder }: Props) {
-  const isTall = index % 3 === 1;
+  const hasImage = product.image && product.image !== "/products/placeholder.jpg";
 
   return (
     <motion.article
@@ -22,52 +22,60 @@ export default function ProductCard({ product, index, onOrder }: Props) {
         duration: 0.5, 
         delay: (index % 6) * 0.08,
       }}
-      className={`group relative ${isTall ? "md:row-span-2" : ""}`}
+      className="group"
     >
-      <div className="relative h-full overflow-hidden rounded-3xl bg-white shadow-soft transition-all duration-300 hover:shadow-float">
-        {/* Image Section */}
-        <div className={`relative overflow-hidden bg-gradient-to-br from-cream-dark to-cream ${
-          isTall ? "aspect-[3/4] md:aspect-auto md:h-full md:min-h-[400px]" : "aspect-square"
-        }`}>
-          <Image
-            src={product.image || "/brand/packaging.png"}
-            alt={product.name}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 33vw"
-          />
+      <div className="relative h-full overflow-hidden rounded-2xl bg-white shadow-soft transition-all duration-300 hover:shadow-float">
+        {/* Image Section - Uniform Size */}
+        <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-cream-dark via-cream to-gold/20">
+          {hasImage ? (
+            <Image
+              src={product.image}
+              alt={product.name}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            /* Beautiful Placeholder */
+            <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+              <div className="mb-4 rounded-full bg-gold/20 p-5">
+                <svg className="h-12 w-12 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <h4 className="font-semibold text-navy">{product.name}</h4>
+              <p className="mt-1 text-xs text-navy/50">{product.category}</p>
+            </div>
+          )}
 
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-navy via-navy/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy/60 via-transparent to-transparent" />
 
           {/* Category Badge */}
-          <div className="absolute top-4 right-4">
-            <span className="badge-premium backdrop-blur-sm">
+          <div className="absolute top-3 right-3">
+            <span className="inline-block rounded-full bg-navy/80 px-3 py-1 text-xs font-medium text-gold backdrop-blur-sm">
               {product.category}
             </span>
           </div>
 
-          {/* Quick View Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileHover={{ opacity: 1, y: 0 }}
-            className="absolute bottom-4 left-1/2 -translate-x-1/2"
-          >
-            <button
-              type="button"
-              onClick={() => onOrder(product)}
-              className="flex items-center gap-2 rounded-full bg-white/95 px-5 py-2.5 text-sm font-medium text-navy shadow-lg backdrop-blur-sm transition-all duration-300 hover:bg-gold hover:text-navy"
-            >
-              اطلب الآن
-            </button>
-          </motion.div>
+          {/* Featured Badge */}
+          {product.isFeatured && (
+            <div className="absolute top-3 left-3">
+              <span className="inline-flex items-center gap-1 rounded-full bg-gold px-3 py-1 text-xs font-bold text-navy">
+                <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                مميز
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Content Section */}
-        <div className="relative z-10 p-5">
+        <div className="p-4">
           <div className="space-y-3">
             {/* Product Name */}
-            <h3 className="font-semibold leading-tight text-navy" style={{ fontSize: 'var(--text-h3)' }}>
+            <h3 className="font-semibold leading-tight text-navy line-clamp-1" style={{ fontSize: 'var(--text-lg)' }}>
               {product.name}
             </h3>
 
@@ -76,17 +84,29 @@ export default function ProductCard({ product, index, onOrder }: Props) {
               {product.description}
             </p>
 
-            {/* Price */}
+            {/* Weight & Pieces */}
+            {(product.weight || product.pieces) && (
+              <div className="flex items-center gap-2 text-xs text-navy/50">
+                {product.weight && <span>{product.weight}</span>}
+                {product.weight && product.pieces && <span>•</span>}
+                {product.pieces && <span>{product.pieces} قطعة</span>}
+              </div>
+            )}
+
+            {/* Price & Order Button */}
             <div className="flex items-center justify-between pt-2">
-              <span className="text-lg font-bold text-gold">
-                {product.price.toLocaleString()} ل.س
-              </span>
+              <div className="flex flex-col">
+                <span className="text-lg font-bold text-gold">
+                  {product.price.toLocaleString()} 
+                </span>
+                <span className="text-xs text-navy/50">ليرة سورية</span>
+              </div>
               <button
                 type="button"
                 onClick={() => onOrder(product)}
-                className="rounded-full bg-navy px-4 py-2 text-sm font-medium text-gold transition-all duration-300 hover:bg-gold hover:text-navy"
+                className="rounded-xl bg-navy px-5 py-2.5 text-sm font-medium text-gold transition-all duration-300 hover:bg-gold hover:text-navy"
               >
-                اطلب
+                اطلب الآن
               </button>
             </div>
           </div>
