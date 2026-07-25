@@ -93,18 +93,12 @@ export default function ProductCard({ product, index, onOrder }: Props) {
               </div>
             )}
 
-            {/* Price & Order Button */}
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex flex-col">
-                <span className="text-lg font-bold text-gold">
-                  {product.price.toLocaleString()} 
-                </span>
-                <span className="text-xs text-navy/50">ليرة سورية</span>
-              </div>
+            {/* Order Button */}
+            <div className="flex items-center justify-center pt-2">
               <button
                 type="button"
                 onClick={() => onOrder(product)}
-                className="rounded-xl bg-navy px-5 py-2.5 text-sm font-medium text-gold transition-all duration-300 hover:bg-gold hover:text-navy"
+                className="w-full rounded-xl bg-navy py-3 text-sm font-medium text-gold transition-all duration-300 hover:bg-gold hover:text-navy"
               >
                 اطلب الآن
               </button>

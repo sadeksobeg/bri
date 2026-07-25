@@ -101,39 +101,43 @@ export default function ProductGrid({ products }: Props) {
           transition={{ delay: 0.2 }}
           className="mb-12 flex flex-wrap items-center justify-center gap-3"
         >
-          {categories.map((cat, index) => (
-            <motion.button
-              key={cat}
-              type="button"
-              onClick={() => setSelectedCategory(cat)}
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 * index }}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              className={`group relative overflow-hidden rounded-full px-6 py-2.5 text-sm font-medium transition-all duration-300 ${
-                selectedCategory === cat
-                  ? "bg-gradient-to-r from-navy to-navy-light text-gold shadow-lg shadow-navy/30"
-                  : "border border-navy/10 bg-white text-navy/70 hover:border-gold hover:text-gold-dark hover:shadow-md hover:shadow-gold/10"
-              }`}
-            >
-              {selectedCategory === cat && (
-                <motion.span
-                  layoutId="activeCategory"
-                  className="absolute inset-0 bg-gradient-to-r from-navy to-navy-light"
-                  initial={false}
-                  transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10 flex items-center gap-2">
-                {selectedCategory === cat && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-gold" />
-                )}
-                {cat}
-              </span>
-            </motion.button>
-          ))}
+          {categories.map((cat, index) => {
+            // Color mapping for categories
+            const getCategoryColor = (category: string) => {
+              if (category === "الكل") return { bg: "from-navy to-navy-light", text: "text-gold", border: "border-navy/10" };
+              if (category.includes("شوكولا") || category.includes("شوكولاتة")) return { bg: "from-amber-600 to-amber-800", text: "text-white", border: "border-amber-600" };
+              if (category.includes("معمول") || category.includes("بسكويت")) return { bg: "from-yellow-600 to-orange-600", text: "text-white", border: "border-yellow-600" };
+              if (category.includes("تارت") || category.includes("كاب") || category.includes("حلويات")) return { bg: "from-pink-500 to-rose-600", text: "text-white", border: "border-pink-500" };
+              if (category.includes("بوكس")) return { bg: "from-purple-600 to-violet-700", text: "text-white", border: "border-purple-600" };
+              return { bg: "from-gold to-gold-dark", text: "text-navy", border: "border-gold" };
+            };
+            
+            const colors = getCategoryColor(cat);
+            const isSelected = selectedCategory === cat;
+            
+            return (
+              <motion.button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 * index }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                className={`group relative overflow-hidden rounded-full px-6 py-2.5 text-sm font-medium transition-all duration-300 border ${
+                  isSelected
+                    ? `bg-gradient-to-r ${colors.bg} ${colors.text} shadow-lg`
+                    : `bg-white ${colors.text} ${colors.border} hover:shadow-md`
+                }`}
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  {cat}
+                </span>
+              </motion.button>
+            );
+          })}
         </motion.div>
 
         {/* Products Grid */}
