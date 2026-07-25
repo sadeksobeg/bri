@@ -14,7 +14,7 @@ export type ProductDTO = {
   id: string;
   name: string;
   description: string;
-  price: number;
+  price: number | null;
   weight: string | null;
   pieces: number | null;
   ingredients: string | null;
@@ -24,6 +24,8 @@ export type ProductDTO = {
   category: string;
   options: string;
   isFeatured: boolean;
+  isBestSeller: boolean;
+  isNew: boolean;
   isActive: boolean;
   sortOrder: number;
   createdAt?: string;

@@ -12,7 +12,7 @@ model Product {
   id          String   @id @default(cuid())
   name        String
   description String
-  price       Float
+  price       Float?
   weight      String?
   pieces      Int?
   ingredients String?
@@ -22,6 +22,8 @@ model Product {
   category    String
   options     String   @default("[]")
   isFeatured  Boolean  @default(false)
+  isBestSeller Boolean @default(false)
+  isNew       Boolean  @default(false)
   isActive    Boolean  @default(true)
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())

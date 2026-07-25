@@ -46,7 +46,8 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const name = String(formData.get("name") || "").trim();
     const description = String(formData.get("description") || "").trim();
-    const price = parseFloat(String(formData.get("price") || "0"));
+    const priceStr = String(formData.get("price") || "");
+    const price = priceStr ? parseFloat(priceStr) : null;
     const weight = String(formData.get("weight") || "").trim() || null;
     const pieces = parseInt(String(formData.get("pieces") || ""), 10);
     const ingredients = String(formData.get("ingredients") || "").trim() || null;
@@ -56,6 +57,8 @@ export async function POST(request: NextRequest) {
     const options = String(formData.get("options") || "[]");
     const isActive = formData.get("isActive") !== "false";
     const isFeatured = formData.get("isFeatured") === "true";
+    const isBestSeller = formData.get("isBestSeller") === "true";
+    const isNew = formData.get("isNew") === "true";
     const sortOrder = parseInt(String(formData.get("sortOrder") || "0"), 10);
     const imageFile = formData.get("image") as File | null;
     const existingImage = String(formData.get("existingImage") || "");
@@ -65,9 +68,6 @@ export async function POST(request: NextRequest) {
     }
     if (!description || description.length < 10) {
       return NextResponse.json({ error: "الوصف يجب أن يكون 10 أحرف على الأقل" }, { status: 400 });
-    }
-    if (Number.isNaN(price) || price < 0) {
-      return NextResponse.json({ error: "السعر يجب أن يكون رقماً موجباً" }, { status: 400 });
     }
     if (!category || category.length < 1) {
       return NextResponse.json({ error: "التصنيف مطلوب" }, { status: 400 });
@@ -92,6 +92,8 @@ export async function POST(request: NextRequest) {
         options,
         isActive,
         isFeatured,
+        isBestSeller,
+        isNew,
         image,
         sortOrder: Number.isNaN(sortOrder) ? 0 : sortOrder,
       },
@@ -110,7 +112,8 @@ export async function PUT(request: NextRequest) {
     const id = String(formData.get("id") || "").trim();
     const name = String(formData.get("name") || "").trim();
     const description = String(formData.get("description") || "").trim();
-    const price = parseFloat(String(formData.get("price") || "0"));
+    const priceStr = String(formData.get("price") || "");
+    const price = priceStr ? parseFloat(priceStr) : null;
     const weight = String(formData.get("weight") || "").trim() || null;
     const pieces = parseInt(String(formData.get("pieces") || ""), 10);
     const ingredients = String(formData.get("ingredients") || "").trim() || null;
@@ -120,6 +123,8 @@ export async function PUT(request: NextRequest) {
     const options = String(formData.get("options") || "[]");
     const isActive = formData.get("isActive") !== "false";
     const isFeatured = formData.get("isFeatured") === "true";
+    const isBestSeller = formData.get("isBestSeller") === "true";
+    const isNew = formData.get("isNew") === "true";
     const sortOrder = parseInt(String(formData.get("sortOrder") || "0"), 10);
     const imageFile = formData.get("image") as File | null;
     const existingImage = String(formData.get("existingImage") || "");
@@ -157,6 +162,8 @@ export async function PUT(request: NextRequest) {
         options,
         isActive,
         isFeatured,
+        isBestSeller,
+        isNew,
         image,
         sortOrder: Number.isNaN(sortOrder) ? 0 : sortOrder,
       },

@@ -151,6 +151,16 @@ function SortableRow({
                 مميز
               </div>
             )}
+            {product.isBestSeller && (
+              <div className="absolute -right-1 -top-1 rounded-full bg-rose-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                الأكثر مبيعاً
+              </div>
+            )}
+            {product.isNew && (
+              <div className="absolute -right-1 -top-1 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white">
+                جديد
+              </div>
+            )}
           </div>
           <div>
             <p className="font-medium text-navy">{product.name}</p>

@@ -35,6 +35,8 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
   const [sortOrder, setSortOrder] = useState(product?.sortOrder?.toString() || "0");
   const [isActive, setIsActive] = useState(product?.isActive ?? true);
   const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false);
+  const [isBestSeller, setIsBestSeller] = useState(product?.isBestSeller ?? false);
+  const [isNew, setIsNew] = useState(product?.isNew ?? false);
   const [options, setOptions] = useState<ProductOptionGroup[]>(
     product ? parseOptions(product.options) : [{ name: "الحجم", values: ["250غ", "500غ"] }]
   );
@@ -76,12 +78,6 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
       return;
     }
 
-    const priceNum = parseFloat(price);
-    if (!price || isNaN(priceNum) || priceNum < 0) {
-      setError("السعر يجب أن يكون رقماً موجباً");
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -98,6 +94,8 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
       formData.set("sortOrder", sortOrder);
       formData.set("isActive", String(isActive));
       formData.set("isFeatured", String(isFeatured));
+      formData.set("isBestSeller", String(isBestSeller));
+      formData.set("isNew", String(isNew));
       formData.set(
         "options",
         JSON.stringify(
@@ -412,6 +410,46 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
                 >
                   <motion.span
                     animate={{ x: isFeatured ? 28 : 4 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className="absolute top-1 h-6 w-6 rounded-full bg-white shadow-md"
+                  />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between rounded-xl border border-gold/10 bg-gold/5 p-4">
+                <div>
+                  <p className="font-medium text-navy">الأكثر مبيعاً</p>
+                  <p className="text-xs text-navy/50">علامة الأكثر مبيعاً</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsBestSeller(!isBestSeller)}
+                  className={`relative h-8 w-14 rounded-full transition-colors duration-300 ${
+                    isBestSeller ? "bg-rose-500" : "bg-gray-300"
+                  }`}
+                >
+                  <motion.span
+                    animate={{ x: isBestSeller ? 28 : 4 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    className="absolute top-1 h-6 w-6 rounded-full bg-white shadow-md"
+                  />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between rounded-xl border border-gold/10 bg-gold/5 p-4">
+                <div>
+                  <p className="font-medium text-navy">جديد</p>
+                  <p className="text-xs text-navy/50">علامة المنتج الجديد</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNew(!isNew)}
+                  className={`relative h-8 w-14 rounded-full transition-colors duration-300 ${
+                    isNew ? "bg-emerald-500" : "bg-gray-300"
+                  }`}
+                >
+                  <motion.span
+                    animate={{ x: isNew ? 28 : 4 }}
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                     className="absolute top-1 h-6 w-6 rounded-full bg-white shadow-md"
                   />
