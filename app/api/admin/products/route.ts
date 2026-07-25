@@ -138,9 +138,6 @@ export async function PUT(request: NextRequest) {
     if (!description || description.length < 10) {
       return NextResponse.json({ error: "الوصف يجب أن يكون 10 أحرف على الأقل" }, { status: 400 });
     }
-    if (Number.isNaN(price) || price < 0) {
-      return NextResponse.json({ error: "السعر يجب أن يكون رقماً موجباً" }, { status: 400 });
-    }
 
     let image = existingImage;
     if (imageFile && imageFile.size > 0) {
