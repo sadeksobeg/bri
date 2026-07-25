@@ -162,7 +162,7 @@ export default function Footer() {
                   </div>
                   <div>
                     <p className="text-xs text-cream/50">الموقع</p>
-                    <p className="text-sm text-cream/80">دمشق، سوريا</p>
+                    <p className="text-sm text-cream/80">سوريا</p>
                   </div>
                 </div>
               </li>
