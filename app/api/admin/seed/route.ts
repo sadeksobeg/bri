@@ -4,6 +4,14 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     // Run raw SQL to create all tables
+    // Add missing columns if they don't exist
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "isBestSeller" INTEGER NOT NULL DEFAULT 0`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "isNew" INTEGER NOT NULL DEFAULT 0`);
+    } catch (e) {
+      // Columns may already exist, ignore error
+    }
+
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "Product" (
         "id" TEXT NOT NULL PRIMARY KEY,
