@@ -4,12 +4,32 @@ import { prisma } from "@/lib/prisma";
 export async function GET() {
   try {
     // Run raw SQL to create all tables
-    // Add missing columns if they don't exist
+    // Add missing columns if they don't exist (for older databases)
     try {
-      await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "isBestSeller" INTEGER NOT NULL DEFAULT 0`);
-      await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN IF NOT EXISTS "isNew" INTEGER NOT NULL DEFAULT 0`);
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN "isBestSeller" INTEGER NOT NULL DEFAULT 0`);
     } catch (e) {
-      // Columns may already exist, ignore error
+      // Column may already exist, ignore error
+    }
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN "isNew" INTEGER NOT NULL DEFAULT 0`);
+    } catch (e) {
+      // Column may already exist, ignore error
+    }
+
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN "ingredients" TEXT`);
+    } catch (e) {
+      // Column may already exist, ignore error
+    }
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN "wholesalePrice" REAL`);
+    } catch (e) {
+      // Column may already exist, ignore error
+    }
+    try {
+      await prisma.$executeRawUnsafe(`ALTER TABLE "Product" ADD COLUMN "discount" REAL NOT NULL DEFAULT 0`);
+    } catch (e) {
+      // Column may already exist, ignore error
     }
 
     await prisma.$executeRawUnsafe(`
