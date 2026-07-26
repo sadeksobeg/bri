@@ -597,7 +597,7 @@ export default function AdminDashboard() {
                         <div>
                           <p className="text-xs text-navy/50">متوسط السعر</p>
                           <p className="font-[family-name:var(--font-amiri)] text-xl font-bold text-navy">
-                            {products.length ? Math.round(products.reduce((acc, p) => acc + p.price, 0) / products.length).toLocaleString("en-US") : 0}
+                            {products.length ? Math.round(products.reduce((acc, p) => acc + (p.price ?? 0), 0) / products.length).toLocaleString("en-US") : 0}
                             <span className="mr-1 text-xs font-normal text-navy/50">ل.س</span>
                           </p>
                         </div>
