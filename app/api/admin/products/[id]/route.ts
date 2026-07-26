@@ -1,30 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { writeFile, mkdir, unlink } from "fs/promises";
-import path from "path";
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export const dynamic = "force-dynamic";
 
 type Params = { params: Promise<{ id: string }> };
 
-async function saveUploadedImage(file: File): Promise<string> {
+async function uploadToCloudinary(file: File): Promise<string> {
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
-  const ext = path.extname(file.name) || ".jpg";
-  const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
-  await writeFile(path.join(uploadDir, filename), buffer);
-  return `/uploads/${filename}`;
-}
+  const base64 = buffer.toString("base64");
+  const dataUri = `data:${file.type};base64,${base64}`;
 
-async function deleteUploadIfLocal(imagePath: string) {
-  if (!imagePath.startsWith("/uploads/")) return;
-  try {
-    await unlink(path.join(process.cwd(), "public", imagePath));
-  } catch {
-    // ignore missing files
-  }
+  const result = await cloudinary.uploader.upload(dataUri, {
+    folder: "brivia/products",
+    resource_type: "image",
+    transformation: [
+      { width: 800, height: 800, crop: "limit" },
+      { quality: "auto", fetch_format: "auto" },
+    ],
+  });
+
+  return result.secure_url;
 }
 
 export async function PUT(request: NextRequest, { params }: Params) {
@@ -48,6 +51,8 @@ export async function PUT(request: NextRequest, { params }: Params) {
     const options = String(formData.get("options") || "[]");
     const isActive = formData.get("isActive") !== "false";
     const isFeatured = formData.get("isFeatured") === "true";
+    const isBestSeller = formData.get("isBestSeller") === "true";
+    const isNew = formData.get("isNew") === "true";
     const sortOrder = parseInt(String(formData.get("sortOrder") || "0"), 10);
     const imageFile = formData.get("image") as File | null;
 
@@ -66,9 +71,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
     let image = existing.image;
     if (imageFile && imageFile.size > 0) {
-      const newImage = await saveUploadedImage(imageFile);
-      await deleteUploadIfLocal(existing.image);
-      image = newImage;
+      image = await uploadToCloudinary(imageFile);
     }
 
     const product = await prisma.product.update({
@@ -86,6 +89,8 @@ export async function PUT(request: NextRequest, { params }: Params) {
         options,
         isActive,
         isFeatured,
+        isBestSeller,
+        isNew,
         image,
         sortOrder: Number.isNaN(sortOrder) ? 0 : sortOrder,
       },
@@ -107,7 +112,6 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
     }
 
     await prisma.product.delete({ where: { id } });
-    await deleteUploadIfLocal(existing.image);
 
     return NextResponse.json({ success: true });
   } catch (error) {
