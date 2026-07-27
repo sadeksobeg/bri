@@ -31,11 +31,6 @@ const nextConfig = {
   // Powered by header removal (optional)
   poweredByHeader: false,
 
-  // Enable experimental features for performance
-  experimental: {
-    optimizeCss: true,
-  },
-
   // Headers for performance
   async headers() {
     return [
