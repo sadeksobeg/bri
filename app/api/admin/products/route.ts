@@ -2,28 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { v2 as cloudinary } from "cloudinary";
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Configure Cloudinary only if credentials exist
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+const apiKey = process.env.CLOUDINARY_API_KEY;
+const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+if (cloudName && apiKey && apiSecret) {
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+  });
+}
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
-  try {
-    const products = await prisma.product.findMany({
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-    });
-    return NextResponse.json(products);
-  } catch (error) {
-    console.error("GET /api/admin/products:", error);
-    return NextResponse.json({ error: "فشل جلب المنتجات" }, { status: 500 });
-  }
-}
-
 async function uploadToCloudinary(file: File): Promise<string> {
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error("Cloudinary غير مهيأ");
+  }
+  
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
   const base64 = buffer.toString("base64");
@@ -39,6 +37,18 @@ async function uploadToCloudinary(file: File): Promise<string> {
   });
 
   return result.secure_url;
+}
+
+export async function GET() {
+  try {
+    const products = await prisma.product.findMany({
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
+    });
+    return NextResponse.json(products);
+  } catch (error) {
+    console.error("GET /api/admin/products:", error);
+    return NextResponse.json({ error: "فشل جلب المنتجات" }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest) {

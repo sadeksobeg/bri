@@ -2,17 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { v2 as cloudinary } from "cloudinary";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Configure Cloudinary only if credentials exist
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+const apiKey = process.env.CLOUDINARY_API_KEY;
+const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+if (cloudName && apiKey && apiSecret) {
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+  });
+}
 
 export const dynamic = "force-dynamic";
 
-type Params = { params: Promise<{ id: string }> };
-
 async function uploadToCloudinary(file: File): Promise<string> {
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error("Cloudinary غير مهيأ");
+  }
+  
   const bytes = await file.arrayBuffer();
   const buffer = Buffer.from(bytes);
   const base64 = buffer.toString("base64");
@@ -29,6 +38,8 @@ async function uploadToCloudinary(file: File): Promise<string> {
 
   return result.secure_url;
 }
+
+type Params = { params: Promise<{ id: string }> };
 
 export async function PUT(request: NextRequest, { params }: Params) {
   try {
@@ -55,6 +66,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
     const isNew = formData.get("isNew") === "true";
     const sortOrder = parseInt(String(formData.get("sortOrder") || "0"), 10);
     const imageFile = formData.get("image") as File | null;
+    const existingImage = String(formData.get("existingImage") || "");
 
     if (!name || name.length < 2) {
       return NextResponse.json({ error: "اسم المنتج يجب أن يكون 2 أحرف على الأقل" }, { status: 400 });
@@ -69,7 +81,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "التصنيف مطلوب" }, { status: 400 });
     }
 
-    let image = existing.image;
+    let image = existingImage || existing.image;
     if (imageFile && imageFile.size > 0) {
       image = await uploadToCloudinary(imageFile);
     }
