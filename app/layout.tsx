@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Amiri, Tajawal } from "next/font/google";
 import "./globals.css";
+import AccessibilityHelper from "@/components/AccessibilityHelper";
 
 const amiri = Amiri({
   subsets: ["arabic", "latin"],
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
     description: "تجربة حلوى استثنائية — من الشوكولاتة الحرفية إلى علب الهدايا الفاخرة",
     images: [
       {
-        url: `${SITE_URL}/brand/og-image.jpg`,
+        url: "/og",
         width: 1200,
         height: 630,
         alt: "BRIVIA - Premium Confectionery",
@@ -60,12 +61,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "BRIVIA | حلويات فاخرة",
     description: "تجربة حلوى استثنائية — من الشوكولاتة الحرفية إلى علب الهدايا الفاخرة",
-    images: [`${SITE_URL}/brand/og-image.jpg`],
+    images: ["/og"],
   },
   icons: {
-    icon: "/icon.png",
-    apple: "/icon.png",
-    shortcut: "/icon.png",
+    icon: "/icon",
+    apple: "/icon-192",
+    shortcut: "/icon",
   },
   manifest: "/manifest.json",
 };
@@ -121,7 +122,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased font-[family-name:var(--font-tajawal)] bg-cream text-navy">
-        {children}
+        <AccessibilityHelper>
+          {children}
+        </AccessibilityHelper>
       </body>
     </html>
   );

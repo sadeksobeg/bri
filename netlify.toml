@@ -1,0 +1,69 @@
+[build]
+  command = "npx prisma generate && npx next build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Security Headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Content-Security-Policy = """
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: blob: https://images.unsplash.com https://res.cloudinary.com https://*.public;
+      connect-src 'self' https://api.cloudinary.com https://*.turso.io wss://*.turso.io;
+      frame-ancestors 'none';
+      base-uri 'self';
+      form-action 'self';
+    """
+
+# Cache static assets
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/showcase/*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/icon*"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+# API routes - no caching
+[[headers]]
+  for = "/api/*"
+  [headers.values]
+    Cache-Control = "no-store, must-revalidate"
+
+# Serve Next.js pages for all routes (SPA mode)
+[[redirects]]
+  from = "/*"
+  to = "/"
+  status = 200
+  conditions = {Language = ["en"]}
+
+[[redirects]]
+  from = "/*"
+  to = "/"
+  status = 200
+  conditions = {Language = ["ar"]}
+
+# Default fallback
+[[redirects]]
+  from = "/*"
+  to = "/"
+  status = 200
