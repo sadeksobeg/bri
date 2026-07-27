@@ -6,6 +6,9 @@
   NODE_VERSION = "20"
   NEXT_TELEMETRY_DISABLED = "1"
 
+[[plugins]]
+package = "@netlify/plugin-nextjs"
+
 # Security Headers
 [[headers]]
   for = "/*"
@@ -48,22 +51,3 @@
   for = "/api/*"
   [headers.values]
     Cache-Control = "no-store, must-revalidate"
-
-# Serve Next.js pages for all routes (SPA mode)
-[[redirects]]
-  from = "/*"
-  to = "/"
-  status = 200
-  conditions = {Language = ["en"]}
-
-[[redirects]]
-  from = "/*"
-  to = "/"
-  status = 200
-  conditions = {Language = ["ar"]}
-
-# Default fallback
-[[redirects]]
-  from = "/*"
-  to = "/"
-  status = 200
