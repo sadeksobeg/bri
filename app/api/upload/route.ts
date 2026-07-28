@@ -1,13 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
-
-export const dynamic = "force-dynamic";
+import { writeFile, mkdir } from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
 
 // Maximum image size: 8MB
 const MAX_SIZE = 8 * 1024 * 1024;
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+
+export const dynamic = "force-dynamic";
+
+async function ensureUploadDir() {
+  if (!existsSync(UPLOAD_DIR)) {
+    await mkdir(UPLOAD_DIR, { recursive: true });
+  }
+}
 
 export async function POST(request: NextRequest) {
   try {
+    await ensureUploadDir();
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
@@ -23,18 +36,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "حجم الملف كبير جداً (الحد الأقصى 8MB)" }, { status: 400 });
     }
 
-    // Convert to base64
+    // Generate unique filename
+    const ext = file.name.split(".").pop() || "jpg";
+    const fileName = `${uuidv4()}.${ext}`;
+    const filePath = path.join(UPLOAD_DIR, fileName);
+
+    // Save file
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString("base64");
-    
-    // Create data URL
-    const dataUrl = `data:${file.type};base64,${base64}`;
+    await writeFile(filePath, buffer);
 
-    return NextResponse.json({ 
-      url: dataUrl,
+    // Return public URL
+    const url = `/uploads/${fileName}`;
+
+    return NextResponse.json({
+      url,
+      fileName,
       size: buffer.length,
-      type: file.type 
+      type: file.type,
     });
   } catch (error) {
     console.error("Upload error:", error);

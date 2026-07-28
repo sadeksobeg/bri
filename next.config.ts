@@ -12,13 +12,13 @@ const nextConfig = {
         pathname: "/uploads/**",
       },
       {
+        pathname: "/products/**",
+      },
+      {
         pathname: "/showcase/**",
       },
       {
         pathname: "/brand/**",
-      },
-      {
-        pathname: "/products/**",
       },
     ],
     remotePatterns: [

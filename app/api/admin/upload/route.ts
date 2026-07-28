@@ -1,28 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { v2 as cloudinary } from "cloudinary";
+import { writeFile, mkdir } from "fs/promises";
+import { existsSync } from "fs";
+import path from "path";
+import { v4 as uuidv4 } from "uuid";
 
-// Configure Cloudinary only if credentials exist
-const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-const apiKey = process.env.CLOUDINARY_API_KEY;
-const apiSecret = process.env.CLOUDINARY_API_SECRET;
+// Maximum image size: 8MB
+const MAX_SIZE = 8 * 1024 * 1024;
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const UPLOAD_DIR = path.join(process.cwd(), "public", "products");
 
-if (cloudName && apiKey && apiSecret) {
-  cloudinary.config({
-    cloud_name: cloudName,
-    api_key: apiKey,
-    api_secret: apiSecret,
-  });
+export const dynamic = "force-dynamic";
+
+async function ensureUploadDir() {
+  if (!existsSync(UPLOAD_DIR)) {
+    await mkdir(UPLOAD_DIR, { recursive: true });
+  }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Check if Cloudinary is configured
-    if (!cloudName || !apiKey || !apiSecret) {
-      return NextResponse.json(
-        { error: "Cloudinary غير مهيأ. تأكد من إعداد متغيرات البيئة" },
-        { status: 500 }
-      );
-    }
+    await ensureUploadDir();
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
@@ -31,79 +28,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "لم يتم رفع أي ملف" }, { status: 400 });
     }
 
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.type)) {
+    if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
         { error: "نوع الملف غير مسموح. الأنواع المسموحة: JPG, PNG, WEBP" },
         { status: 400 }
       );
     }
 
-    const maxSize = 8 * 1024 * 1024; // 8MB
-    if (file.size > maxSize) {
+    if (file.size > MAX_SIZE) {
       return NextResponse.json(
         { error: "حجم الملف كبير جداً. الحد الأقصى المسموح: 8MB" },
         { status: 400 }
       );
     }
 
-    // Convert file to base64
+    // Generate unique filename
+    const ext = file.name.split(".").pop() || "jpg";
+    const fileName = `${uuidv4()}.${ext}`;
+    const filePath = path.join(UPLOAD_DIR, fileName);
+
+    // Save file locally
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const base64 = buffer.toString("base64");
-    const dataUri = `data:${file.type};base64,${base64}`;
+    await writeFile(filePath, buffer);
 
-    // Upload to Cloudinary
-    const result = await cloudinary.uploader.upload(dataUri, {
-      folder: "brivia/products",
-      resource_type: "image",
-      transformation: [
-        { quality: "auto", fetch_format: "auto" },
-      ],
-    });
+    // Return public URL
+    const url = `/products/${fileName}`;
 
     return NextResponse.json({
-      path: result.secure_url,
-      fileName: result.public_id.split("/").pop(),
-      width: result.width,
-      height: result.height,
+      path: url,
+      fileName,
+      width: 0,
+      height: 0,
     });
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
       { error: "حدث خطأ أثناء رفع الملف" },
-      { status: 500 }
-    );
-  }
-}
-
-// DELETE endpoint to remove image from Cloudinary
-export async function DELETE(request: NextRequest) {
-  try {
-    if (!cloudName || !apiKey || !apiSecret) {
-      return NextResponse.json(
-        { error: "Cloudinary غير مهيأ" },
-        { status: 500 }
-      );
-    }
-
-    const { searchParams } = new URL(request.url);
-    const publicId = searchParams.get("publicId");
-
-    if (!publicId) {
-      return NextResponse.json({ error: "معرف الملف مطلوب" }, { status: 400 });
-    }
-
-    // Extract public_id from full URL
-    const fullPublicId = `brivia/products/${publicId}`;
-    
-    await cloudinary.uploader.destroy(fullPublicId);
-    
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Delete error:", error);
-    return NextResponse.json(
-      { error: "حدث خطأ أثناء حذف الملف" },
       { status: 500 }
     );
   }

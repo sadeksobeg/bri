@@ -19,13 +19,14 @@
     "@prisma/adapter-libsql": "^7.9.0",
     "@prisma/client": "^6.9.0",
     "@swc/helpers": "^0.5.23",
+    "@types/uuid": "^10.0.0",
     "bcryptjs": "^3.0.2",
-    "cloudinary": "^2.10.0",
     "framer-motion": "^12.18.1",
     "jose": "^6.0.11",
     "next": "^16.2.12",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "uuid": "^14.0.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.10",
