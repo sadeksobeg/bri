@@ -6,6 +6,12 @@ const nextConfig = {
   // Image optimization
   images: {
     formats: ["image/avif", "image/webp"],
+    // Allow images from local uploads folder
+    localPatterns: [
+      {
+        pathname: "/uploads/**",
+      },
+    ],
     remotePatterns: [
       {
         protocol: "https",
