@@ -39,10 +39,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 8 * 1024 * 1024; // 8MB
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: "حجم الملف كبير جداً. الحد الأقصى المسموح: 5MB" },
+        { error: "حجم الملف كبير جداً. الحد الأقصى المسموح: 8MB" },
         { status: 400 }
       );
     }
@@ -58,7 +58,6 @@ export async function POST(request: NextRequest) {
       folder: "brivia/products",
       resource_type: "image",
       transformation: [
-        { width: 800, height: 800, crop: "limit" },
         { quality: "auto", fetch_format: "auto" },
       ],
     });

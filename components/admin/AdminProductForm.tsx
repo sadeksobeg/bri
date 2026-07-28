@@ -229,7 +229,7 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
                 <p className="mt-2 text-xs text-red-500">{uploadError}</p>
               )}
               <p className="mt-2 text-xs text-navy/50">
-                PNG, JPG, WEBP - حتى 5MB
+                PNG, JPG, WEBP - حتى 8MB
               </p>
             </div>
           </div>

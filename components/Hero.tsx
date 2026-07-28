@@ -49,8 +49,8 @@ export default function Hero() {
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#0b1a3d] via-[#0f2744] to-[#1a1a2e]">
-      {/* Ambient Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
+      {/* Ambient Background Effects - simplified on mobile */}
+      <div className="absolute inset-0 overflow-hidden max-md:hidden">
         {/* Gradient orbs */}
         <motion.div
           animate={{ scale: [1, 1.4, 1], x: [-30, 30, -30], opacity: [0.3, 0.5, 0.3] }}
@@ -89,88 +89,55 @@ export default function Hero() {
         >
           <div className="relative w-full max-w-[520px]">
             
-            {/* Outer decorative rings */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 50, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-[-20px] rounded-full border border-[#d4af37]/10 border-dashed"
-            />
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ duration: 70, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-[-35px] rounded-full border border-[#d4af37]/5"
-            />
+            {/* Outer decorative rings - hidden on mobile for performance */}
+            <div className="absolute inset-[-20px] rounded-full border border-[#d4af37]/10 border-dashed max-md:hidden" />
+            <div className="absolute inset-[-35px] rounded-full border border-[#d4af37]/5 max-md:hidden" />
             
             {/* Main cube frame */}
             <div className="relative overflow-hidden rounded-2xl border border-[#d4af37]/40 bg-[#0b1a3d]/40 shadow-2xl shadow-[#d4af37]/20 backdrop-blur-sm">
               <div className="absolute inset-0 rounded-2xl border border-[#d4af37]/20" />
               
-              {/* 3D Cube Container */}
-              <div className="relative aspect-square w-full" style={{ perspective: 1200 }}>
-                <AnimatePresence mode="wait" custom={direction}>
-                  <motion.div
-                    key={currentSlide}
-                    custom={direction}
-                    initial={{ rotateY: direction > 0 ? 90 : -90, opacity: 0, scale: 0.85, filter: "blur(8px)" }}
-                    animate={{ rotateY: 0, opacity: 1, scale: 1, filter: "blur(0px)" }}
-                    exit={{ rotateY: direction > 0 ? -90 : 90, opacity: 0, scale: 0.85, filter: "blur(8px)" }}
-                    transition={{ rotateY: { duration: 1, ease: [0.4, 0, 0.2, 1] }, opacity: { duration: 0.4 }, scale: { duration: 0.5 }, filter: { duration: 0.4 } }}
-                    style={{ transformStyle: "preserve-3d" }}
-                    className="absolute inset-0"
-                  >
-                    {/* Image with Ken Burns effect */}
-                    <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                      <motion.div
-                        className="absolute inset-[-10%]"
-                        animate={{ scale: [1.15, 1.25, 1.15], rotate: [0, 2, 0, -2, 0] }}
-                        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-                      >
-                        <Image
-                          src={slides[currentSlide].src}
-                          alt={`عرض ${currentSlide + 1}`}
-                          fill
-                          priority={currentSlide === 0}
-                          sizes="(max-width: 1024px) 100vw, 600px"
-                          className="object-cover"
-                          quality={95}
-                        />
-                      </motion.div>
+                {/* 3D Cube Container */}
+                <div className="relative aspect-square w-full">
+                  <AnimatePresence mode="wait" custom={direction}>
+                    <motion.div
+                      key={currentSlide}
+                      custom={direction}
+                      initial={{ opacity: 0, scale: 0.92 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.92 }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                      className="absolute inset-0 will-change-transform"
+                    >
+                      {/* Image with subtle Ken Burns effect */}
+                      <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                        <motion.div
+                          className="absolute inset-0"
+                          animate={{ scale: [1.08, 1.12, 1.08] }}
+                          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
+                        >
+                          <Image
+                            src={slides[currentSlide].src}
+                            alt={`عرض ${currentSlide + 1}`}
+                            fill
+                            priority={currentSlide === 0}
+                            sizes="(max-width: 1024px) 100vw, 600px"
+                            className="object-cover"
+                            quality={85}
+                          />
+                        </motion.div>
 
-                      {/* Light reflection */}
-                      <motion.div
-                        animate={{ x: ["-100%", "200%"], opacity: [0, 0.1, 0] }}
-                        transition={{ duration: 2.5, repeat: Infinity, repeatDelay: 1.5 }}
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                      />
-
-                      {/* Vignette */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/5 via-transparent to-black/25" />
-                    </div>
-
-                    {/* Floating particles */}
-                    {[...Array(6)].map((_, i) => (
-                      <motion.div
-                        key={i}
-                        className="absolute h-1.5 w-1.5 rounded-full bg-[#d4af37]/70"
-                        style={{ left: `${12 + i * 14}%`, top: `${18 + (i % 3) * 25}%` }}
-                        animate={{ y: [-25, 25, -25], opacity: [0.2, 0.7, 0.2], scale: [0.7, 1.3, 0.7] }}
-                        transition={{ duration: 3 + i * 0.4, repeat: Infinity, delay: i * 0.25 }}
-                      />
-                    ))}
-                  </motion.div>
-                </AnimatePresence>
+                        {/* Vignette */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-[#d4af37]/5 via-transparent to-black/25" />
+                      </div>
+                    </motion.div>
+                  </AnimatePresence>
 
                 {/* Corner accents */}
-                <motion.div className="absolute left-3 top-3 h-10 w-10 border-l-2 border-t-2 border-[#d4af37]/70"
-                  animate={{ borderColor: ['rgba(212,175,55,0.7)', 'rgba(212,175,55,1)', 'rgba(212,175,55,0.7)'] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-                <motion.div className="absolute bottom-3 right-3 h-10 w-10 border-b-2 border-r-2 border-[#d4af37]/70"
-                  animate={{ borderColor: ['rgba(212,175,55,0.7)', 'rgba(212,175,55,1)', 'rgba(212,175,55,0.7)'] }}
-                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                />
-                <div className="absolute right-3 top-3 h-6 w-6 border-r-2 border-t-2 border-[#d4af37]/30" />
-                <div className="absolute bottom-3 left-3 h-6 w-6 border-b-2 border-l-2 border-[#d4af37]/30" />
+                <div className="absolute left-3 top-3 h-10 w-10 border-l-2 border-t-2 border-[#d4af37]/70 max-md:hidden" />
+                <div className="absolute bottom-3 right-3 h-10 w-10 border-b-2 border-r-2 border-[#d4af37]/70 max-md:hidden" />
+                <div className="absolute right-3 top-3 h-6 w-6 border-r-2 border-t-2 border-[#d4af37]/30 max-md:hidden" />
+                <div className="absolute bottom-3 left-3 h-6 w-6 border-b-2 border-l-2 border-[#d4af37]/30 max-md:hidden" />
 
                 {/* Navigation Arrows */}
                 <button onClick={prevSlide} className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-[#d4af37]/20 p-3 text-[#d4af37] backdrop-blur-md transition-all duration-300 hover:bg-[#d4af37]/40 hover:scale-110 active:scale-95 border border-[#d4af37]/30">
@@ -362,16 +329,15 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2 }}
-        className="absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-1 text-[#d4af37]/25 max-lg:hidden">
+      {/* Scroll indicator - hidden on mobile */}
+      <div className="absolute bottom-6 left-1/2 z-30 hidden -translate-x-1/2 flex-col items-center gap-1 text-[#d4af37]/25 max-lg:hidden">
         <span className="text-[9px] tracking-[0.2em]">مرر للأسفل</span>
         <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 1.5, repeat: Infinity }}>
           <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }
