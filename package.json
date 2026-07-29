@@ -17,6 +17,8 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@prisma/adapter-libsql": "^7.9.0",
     "@prisma/client": "^6.9.0",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.109.0",
     "@swc/helpers": "^0.5.23",
     "@types/uuid": "^10.0.0",
     "@vercel/blob": "^2.6.1",

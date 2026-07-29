@@ -1,19 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-
-const DEFAULT_IMAGE = "/brand/packaging.png";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const products = await prisma.product.findMany({
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
-    });
-    return NextResponse.json(products);
+    const { data: products, error } = await supabaseAdmin
+      .from('products')
+      .select('*')
+      .order('sortOrder', { ascending: true })
+      .order('createdAt', { ascending: false });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(products || []);
   } catch (error) {
-    console.error("GET /api/admin/products:", error);
-    return NextResponse.json({ error: "فشل جلب المنتجات" }, { status: 500 });
+    console.error('Error fetching products:', error);
+    return NextResponse.json({ error: 'فشل جلب المنتجات' }, { status: 500 });
   }
 }
 
@@ -37,10 +43,9 @@ export async function POST(request: NextRequest) {
       isBestSeller = false,
       isNew = false,
       sortOrder = 0,
-      image = DEFAULT_IMAGE,
+      image = "/brand/packaging.png",
     } = body;
 
-    // Validate
     if (!name || name.length < 2) {
       return NextResponse.json({ error: "اسم المنتج مطلوب" }, { status: 400 });
     }
@@ -51,8 +56,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "التصنيف مطلوب" }, { status: 400 });
     }
 
-    const product = await prisma.product.create({
-      data: {
+    const { data: product, error } = await supabaseAdmin
+      .from('products')
+      .insert({
+        id: `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`,
         name,
         description,
         price,
@@ -67,14 +74,20 @@ export async function POST(request: NextRequest) {
         isFeatured,
         isBestSeller,
         isNew,
-        image: image || DEFAULT_IMAGE,
-        sortOrder: typeof sortOrder === 'number' ? sortOrder : 0,
-      },
-    });
+        image,
+        sortOrder,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+      return NextResponse.json({ error: "فشل إضافة المنتج" }, { status: 500 });
+    }
 
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
-    console.error("POST /api/admin/products:", error);
+    console.error('POST /api/admin/products:', error);
     return NextResponse.json({ error: "فشل إضافة المنتج" }, { status: 500 });
   }
 }

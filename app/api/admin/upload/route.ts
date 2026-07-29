@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put } from "@vercel/blob";
+import { supabaseAdmin } from "@/lib/supabase";
 
 const MAX_SIZE = 8 * 1024 * 1024; // 8MB
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
 
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: "نوع الملف غير مسموح. الأنواع المسموحة: JPG, PNG, WEBP" },
+        { error: "نوع الملف غير مسموح. الأنواع المسموحة: JPG, PNG, WEBP, GIF" },
         { status: 400 }
       );
     }
@@ -27,19 +27,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate unique filename
     const ext = file.name.split(".").pop() || "jpg";
     const fileName = `products/${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
 
-    // Upload to Vercel Blob
-    const blob = await put(fileName, file, {
-      access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN,
-    });
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    const { data, error } = await supabaseAdmin.storage
+      .from('products')
+      .upload(fileName, buffer, {
+        contentType: file.type,
+        upsert: true,
+      });
+
+    if (error) {
+      console.error('Supabase storage error:', error);
+      return NextResponse.json({ error: "فشل رفع الملف" }, { status: 500 });
+    }
+
+    const { data: urlData } = supabaseAdmin.storage
+      .from('products')
+      .getPublicUrl(fileName);
 
     return NextResponse.json({
-      path: blob.url,
-      fileName: blob.pathname,
+      path: urlData.publicUrl,
+      fileName: fileName,
       width: 0,
       height: 0,
     });

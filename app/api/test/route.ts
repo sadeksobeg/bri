@@ -1,33 +1,35 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const result: any = {
     timestamp: new Date().toISOString(),
-    env: {
-      hasDatabaseUrl: !!process.env.DATABASE_URL,
-      databaseUrlPrefix: process.env.DATABASE_URL?.substring(0, 20),
-      hasTursoToken: !!process.env.TURSO_AUTH_TOKEN,
-      hasCloudinary: !!(
-        process.env.CLOUDINARY_CLOUD_NAME &&
-        process.env.CLOUDINARY_API_KEY &&
-        process.env.CLOUDINARY_API_SECRET
-      ),
+    supabase: {
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL ? "configured" : "missing",
+      anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ? "configured" : "missing",
+      serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ? "configured" : "missing",
     },
-    prismaTest: null as any,
+    test: null as any,
     productCount: null as any,
   };
 
   try {
-    const count = await prisma.product.count();
-    result.productCount = count;
-    result.prismaTest = "success";
+    const { count, error } = await supabase
+      .from('products')
+      .select('*', { count: 'exact', head: true });
+
+    if (error) {
+      result.supabaseTest = "failed";
+      result.supabaseError = error.message;
+    } else {
+      result.supabaseTest = "success";
+      result.productCount = count;
+    }
   } catch (error: any) {
-    result.prismaTest = "failed";
-    result.prismaError = error.message;
-    result.prismaStack = error.stack?.substring(0, 500);
+    result.supabaseTest = "failed";
+    result.supabaseError = error.message;
   }
 
   return NextResponse.json(result);

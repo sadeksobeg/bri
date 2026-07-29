@@ -1,28 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { isAuthenticated } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase";
 
 export async function GET() {
-  if (!await isAuthenticated()) {
-    return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
-  }
-
   try {
-    const categories = await prisma.category.findMany({
-      orderBy: [{ sortOrder: "asc" }, { name: "asc" }],
-    });
-    return NextResponse.json(categories);
+    const { data: categories, error } = await supabaseAdmin
+      .from('categories')
+      .select('*')
+      .order('sortOrder', { ascending: true })
+      .order('name', { ascending: true });
+
+    if (error) {
+      console.error('Supabase error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    return NextResponse.json(categories || []);
   } catch (error) {
-    console.error("GET /api/admin/categories:", error);
-    return NextResponse.json({ error: "فشل في جلب التصنيفات" }, { status: 500 });
+    console.error('Error fetching categories:', error);
+    return NextResponse.json({ error: 'فشل في جلب التصنيفات' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  if (!await isAuthenticated()) {
-    return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
-  }
-
   try {
     const body = await request.json();
     const { name, description, color, icon } = body;
@@ -31,26 +30,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "اسم التصنيف مطلوب" }, { status: 400 });
     }
 
-    const existing = await prisma.category.findUnique({
-      where: { name: name.trim() },
-    });
+    const { data: existing } = await supabaseAdmin
+      .from('categories')
+      .select('*')
+      .eq('name', name.trim())
+      .single();
 
     if (existing) {
       return NextResponse.json({ error: "هذا التصنيف موجود بالفعل" }, { status: 400 });
     }
 
-    const category = await prisma.category.create({
-      data: {
+    const { data: category, error } = await supabaseAdmin
+      .from('categories')
+      .insert({
+        id: `cat_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
         name: name.trim(),
         description: description?.trim() || null,
         color: color || "#c9a961",
         icon: icon?.trim() || null,
-      },
-    });
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Supabase insert error:', error);
+      return NextResponse.json({ error: "فشل في إنشاء التصنيف" }, { status: 500 });
+    }
 
     return NextResponse.json(category, { status: 201 });
   } catch (error) {
-    console.error("POST /api/admin/categories:", error);
+    console.error('POST /api/admin/categories:', error);
     return NextResponse.json({ error: "فشل في إنشاء التصنيف" }, { status: 500 });
   }
 }
