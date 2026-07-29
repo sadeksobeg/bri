@@ -159,6 +159,7 @@ export default function ProductGrid({ products }: Props) {
                   product={product}
                   index={index}
                   onOrder={setOrderProduct}
+                  priority={index < 6}
                 />
               ))}
             </motion.div>

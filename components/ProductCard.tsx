@@ -8,9 +8,10 @@ type Props = {
   product: ProductDTO;
   index: number;
   onOrder: (product: ProductDTO) => void;
+  priority?: boolean;
 };
 
-export default function ProductCard({ product, index, onOrder }: Props) {
+export default function ProductCard({ product, index, onOrder, priority = false }: Props) {
   const hasImage = product.image && product.image !== "/products/placeholder.jpg";
 
   return (
@@ -34,6 +35,9 @@ export default function ProductCard({ product, index, onOrder }: Props) {
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-105"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority={priority}
+              placeholder="blur"
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAAIAAoDASIAAhEBAxEB/8QAFgABAQEAAAAAAAAAAAAAAAAAAAUH/8QAIhAAAgEDBAMBAAAAAAAAAAAAAQIDAAQRBRIhMRNBUWH/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A3ClpaRW8UUVrFEsYCqqxgAAcgAD1VVd6xpVpO8E+o20UqHDI0oBB+RWLV6xqU+pXVxPeSySu5LMXOST5JqhXoJHa3kFzGJLeVJIzyGRgwP8jVVUezv7i1mEtrPLE4G2aNipI8ZBBoq1ei7O9vLWUS208kTj7o2IPv5B4NUtN1q81LT4bi6ZWlbOSoAH+0VWvWTU/wD/2Q=="
             />
           ) : (
             /* Beautiful Placeholder */
