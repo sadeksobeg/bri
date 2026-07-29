@@ -15,11 +15,11 @@
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@libsql/client": "^0.17.4",
     "@prisma/adapter-libsql": "^7.9.0",
     "@prisma/client": "^6.9.0",
     "@swc/helpers": "^0.5.23",
     "@types/uuid": "^10.0.0",
+    "@vercel/blob": "^2.6.1",
     "bcryptjs": "^3.0.2",
     "framer-motion": "^12.18.1",
     "jose": "^6.0.11",
@@ -29,6 +29,8 @@
     "uuid": "^14.0.1"
   },
   "devDependencies": {
+    "@libsql/client": "^0.17.4",
+    "@netlify/plugin-nextjs": "^5.15.13",
     "@tailwindcss/postcss": "^4.1.10",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^22.15.30",
@@ -39,7 +41,8 @@
     "prisma": "^6.9.0",
     "tailwindcss": "^4.1.10",
     "tsx": "^4.19.4",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vercel": "^58.0.0"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

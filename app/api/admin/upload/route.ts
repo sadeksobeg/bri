@@ -1,26 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { existsSync } from "fs";
-import path from "path";
-import { v4 as uuidv4 } from "uuid";
+import { put } from "@vercel/blob";
 
-// Maximum image size: 8MB
-const MAX_SIZE = 8 * 1024 * 1024;
+const MAX_SIZE = 8 * 1024 * 1024; // 8MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const UPLOAD_DIR = path.join(process.cwd(), "public", "products");
-
-export const dynamic = "force-dynamic";
-
-async function ensureUploadDir() {
-  if (!existsSync(UPLOAD_DIR)) {
-    await mkdir(UPLOAD_DIR, { recursive: true });
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureUploadDir();
-
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
@@ -44,20 +29,17 @@ export async function POST(request: NextRequest) {
 
     // Generate unique filename
     const ext = file.name.split(".").pop() || "jpg";
-    const fileName = `${uuidv4()}.${ext}`;
-    const filePath = path.join(UPLOAD_DIR, fileName);
+    const fileName = `products/${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
 
-    // Save file locally
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(filePath, buffer);
-
-    // Return public URL
-    const url = `/products/${fileName}`;
+    // Upload to Vercel Blob
+    const blob = await put(fileName, file, {
+      access: "public",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    });
 
     return NextResponse.json({
-      path: url,
-      fileName,
+      path: blob.url,
+      fileName: blob.pathname,
       width: 0,
       height: 0,
     });

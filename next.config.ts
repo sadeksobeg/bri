@@ -32,7 +32,7 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "res.cloudinary.com",
+        hostname: "**.vercel-storage.com",
       },
     ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
