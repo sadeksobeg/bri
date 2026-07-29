@@ -59,10 +59,10 @@ export default function Header() {
             
             <div>
               <span className="font-['Amiri'] text-xl font-bold tracking-[0.15em] text-gold transition-all lg:text-2xl">
-                بريڤيا
+                BRIVIA
               </span>
               <p className="hidden text-[8px] tracking-[0.3em] text-gold/50 lg:block lg:text-[9px]">
-                حلويات فاخرة
+                PREMIUM CONFECTIONERY
               </p>
             </div>
           </Link>
