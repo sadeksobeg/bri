@@ -572,7 +572,6 @@ export default function AdminDashboard() {
                       </div>
                     </motion.div>
 
-                    <motion.div
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -604,9 +603,9 @@ export default function AdminDashboard() {
                       </svg>
                       <span className="relative">إضافة منتج</span>
                     </motion.button>
-                  </motion.div>
+                </motion.div>
 
-                  {/* Filters */}
+                {/* Filters */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
