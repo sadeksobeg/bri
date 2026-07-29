@@ -28,15 +28,15 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "**.public.storage.supabase.co",
+        hostname: "lwvyllrf1dxktjeebmtl.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "**.supabase.co",
       },
       {
         protocol: "https",
         hostname: "**.vercel-storage.com",
-      },
-      {
-        protocol: "https",
-        hostname: "lwvyllrf1dxktjeebmtl.supabase.co",
       },
     ],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
