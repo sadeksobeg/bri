@@ -69,6 +69,21 @@ async function compressImage(file: File): Promise<File> {
   });
 }
 
+// Convert file to base64 string
+async function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new window.FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      // Remove data:image/...;base64, prefix
+      const base64 = result.split(",")[1];
+      resolve(base64);
+    };
+    reader.onerror = () => reject(new Error("Could not read file"));
+    reader.readAsDataURL(file);
+  });
+}
+
 type Props = {
   product?: ProductDTO | null;
   categories: CategoryDTO[];
@@ -133,15 +148,18 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
     setUploading(true);
 
     try {
-      // Compress image before uploading (max 1MB, 1200px width)
+      // Compress image and convert to base64 (bypasses FormData size limits)
       const compressedFile = await compressImage(file);
-
-      const formData = new FormData();
-      formData.append("file", compressedFile);
+      const base64 = await fileToBase64(compressedFile);
 
       const res = await fetch("/api/admin/upload", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          base64,
+          mimeType: compressedFile.type,
+          name: compressedFile.name,
+        }),
       });
 
       if (!res.ok) {
