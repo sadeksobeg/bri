@@ -52,7 +52,7 @@ export default function Footer() {
               <div className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-gold/40 shadow-gold transition-all duration-300 group-hover:border-gold group-hover:shadow-gold-lg">
                 <Image 
                   src="/brand/logo.png" 
-                  alt="BRIVIA" 
+                  alt="بريڤيا" 
                   fill 
                   className="object-cover" 
                   sizes="80px"
@@ -63,9 +63,9 @@ export default function Footer() {
             </div>
 
             <h3 className="font-[family-name:var(--font-amiri)] text-3xl font-bold text-gold text-glow">
-              BRIVIA
+              بريڤيا
             </h3>
-            <p className="mt-1 text-[10px] tracking-[0.3em] text-gold/50">PREMIUM CONFECTIONERY</p>
+            <p className="mt-1 text-[10px] tracking-[0.3em] text-gold/50">حلويات فاخرة</p>
 
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-cream/60">
               حلويات فاخرة بحرفية عالية — نكهات استثنائية وتغليف يليق بكل مناسبة
@@ -189,7 +189,7 @@ export default function Footer() {
         >
           <div className="flex items-center gap-2 text-xs text-cream/40">
             <span>© {currentYear}</span>
-            <span className="text-gold/60">BRIVIA</span>
+            <span className="text-gold/60">حلويات فاخرة</span>
             <span>—</span>
             <span>جميع الحقوق محفوظة</span>
           </div>

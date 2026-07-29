@@ -175,15 +175,6 @@ function SortableRow({
         </span>
       </td>
       <td className="px-4 py-4">
-        <div className="font-[family-name:var(--font-amiri)] text-base font-bold text-gold-dark">
-          {(product.price ?? 0).toLocaleString("en-US")}
-        </div>
-        <div className="text-xs text-navy/40">
-          {product.weight && <span> {product.weight}</span>}
-          {product.pieces && <span> • {product.pieces} قطعة</span>}
-        </div>
-      </td>
-      <td className="px-4 py-4">
         <div className="flex items-center justify-center gap-2">
           <button
             type="button"
@@ -582,30 +573,6 @@ export default function AdminDashboard() {
                     </motion.div>
 
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.25 }}
-                      whileHover={{ scale: 1.02, y: -2 }}
-                      className="rounded-2xl border border-gold/10 bg-white p-4 shadow-soft transition-all duration-300 hover:shadow-gold/10"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/10 text-gold">
-                          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <p className="text-xs text-navy/50">متوسط السعر</p>
-                          <p className="font-[family-name:var(--font-amiri)] text-xl font-bold text-navy">
-                            {products.length ? Math.round(products.reduce((acc, p) => acc + (p.price ?? 0), 0) / products.length).toLocaleString("en-US") : 0}
-                            <span className="mr-1 text-xs font-normal text-navy/50">ل.س</span>
-                          </p>
-                        </div>
-                      </div>
-                    </motion.div>
-                  </motion.div>
-
-                  {/* Header & Actions */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -727,7 +694,6 @@ export default function AdminDashboard() {
                             <tr className="border-b border-gold/10 bg-gradient-to-r from-gold/5 to-transparent">
                               <th className="px-6 py-4 text-right font-medium text-navy/70">المنتج</th>
                               <th className="px-4 py-4 text-right font-medium text-navy/70">التصنيف</th>
-                              <th className="px-4 py-4 text-right font-medium text-navy/70">السعر</th>
                               <th className="px-4 py-4 text-center font-medium text-navy/70">الحالة</th>
                               <th className="px-4 py-4 text-center font-medium text-navy/70">إجراءات</th>
                             </tr>

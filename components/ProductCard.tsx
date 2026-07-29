@@ -124,17 +124,8 @@ export default function ProductCard({ product, index, onOrder, priority = false 
             </div>
           )}
 
-          {/* Price & CTA */}
-          <div className="flex items-center justify-between pt-3 border-t border-white/10">
-            {product.price != null && product.price > 0 && (
-              <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold text-gold">
-                  {product.price.toLocaleString('ar-SY')}
-                </span>
-                <span className="text-xs text-white/40">ل.س</span>
-              </div>
-            )}
-            
+          {/* CTA Button */}
+          <div className="pt-3 border-t border-white/10 flex justify-center">
             <motion.button
               type="button"
               onClick={() => onOrder(product)}

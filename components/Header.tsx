@@ -47,7 +47,7 @@ export default function Header() {
             >
               <Image
                 src="/brand/logo.png"
-                alt="BRIVIA"
+                alt="بريڤيا"
                 fill
                 className="object-cover"
                 sizes="56px"
@@ -59,10 +59,10 @@ export default function Header() {
             
             <div>
               <span className="font-['Amiri'] text-xl font-bold tracking-[0.15em] text-gold transition-all lg:text-2xl">
-                BRIVIA
+                بريڤيا
               </span>
               <p className="hidden text-[8px] tracking-[0.3em] text-gold/50 lg:block lg:text-[9px]">
-                PREMIUM CONFECTIONERY
+                حلويات فاخرة
               </p>
             </div>
           </Link>
@@ -98,7 +98,7 @@ export default function Header() {
           {/* Mobile Menu Button */}
           <motion.button
             type="button"
-            className="relative flex h-11 w-11 flex-col items-center justify-center gap-[5px] rounded-full bg-white/5 p-2 backdrop-blur-sm transition-all duration-300 md:hidden hover:bg-white/10"
+            className="relative flex h-11 w-11 flex-col items-center justify-center gap-[5px] rounded-full bg-white/5 p-2 backdrop-blur-sm transition-all duration-300 hover:bg-white/10 md:hidden"
             onClick={() => setMenuOpen(!menuOpen)}
             aria-label="القائمة"
             whileTap={{ scale: 0.95 }}

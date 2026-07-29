@@ -103,12 +103,7 @@ function parseOptions(json: string): ProductOptionGroup[] {
 export default function AdminProductForm({ product, categories, onSaved, onCancel }: Props) {
   const [name, setName] = useState(product?.name || "");
   const [description, setDescription] = useState(product?.description || "");
-  const [price, setPrice] = useState(product?.price?.toString() || "");
-  const [weight, setWeight] = useState(product?.weight || "");
-  const [pieces, setPieces] = useState(product?.pieces?.toString() || "");
   const [ingredients, setIngredients] = useState(product?.ingredients || "");
-  const [wholesalePrice, setWholesalePrice] = useState(product?.wholesalePrice?.toString() || "");
-  const [discount, setDiscount] = useState(product?.discount?.toString() || "0");
   const [category, setCategory] = useState(product?.category || (categories[0]?.name || "شوكولاتة"));
   const [sortOrder, setSortOrder] = useState(product?.sortOrder?.toString() || "0");
   const [isActive, setIsActive] = useState(product?.isActive ?? true);
@@ -193,12 +188,7 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
       const data = {
         name: name.trim(),
         description: description.trim(),
-        price: price ? parseFloat(price) : null,
-        weight: weight.trim() || null,
-        pieces: pieces ? parseInt(pieces, 10) : null,
         ingredients: ingredients.trim() || null,
-        wholesalePrice: wholesalePrice ? parseFloat(wholesalePrice) : null,
-        discount: discount ? parseFloat(discount) : 0,
         category: category.trim(),
         sortOrder: sortOrder ? parseInt(sortOrder, 10) : 0,
         isActive,
@@ -342,19 +332,7 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
               <textarea required rows={3} value={description} onChange={(e) => setDescription(e.target.value)} className="input-premium resize-none" />
             </div>
 
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-navy">السعر (ل.س)</label>
-                <input type="number" min="0" step="1" value={price} onChange={(e) => setPrice(e.target.value)} className="input-premium" />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-navy">سعر الجملة (ل.س)</label>
-                <input type="number" min="0" step="1" value={wholesalePrice} onChange={(e) => setWholesalePrice(e.target.value)} placeholder="اختياري" className="input-premium" />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-navy">التخفيض (%)</label>
-                <input type="number" min="0" max="100" value={discount} onChange={(e) => setDiscount(e.target.value)} className="input-premium" />
-              </div>
+            <div className="grid gap-5 sm:grid-cols-3">
               <div>
                 <label className="mb-2 block text-sm font-medium text-navy">التصنيف</label>
                 <select value={category} onChange={(e) => setCategory(e.target.value)} className="input-premium">
@@ -362,17 +340,6 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
                     <option key={cat.id} value={cat.name}>{cat.name}</option>
                   ))}
                 </select>
-              </div>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-3">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-navy">الوزن</label>
-                <input value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="مثال: 250غ" className="input-premium" />
-              </div>
-              <div>
-                <label className="mb-2 block text-sm font-medium text-navy">عدد القطع</label>
-                <input type="number" min="0" value={pieces} onChange={(e) => setPieces(e.target.value)} className="input-premium" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-medium text-navy">ترتيب العرض</label>
