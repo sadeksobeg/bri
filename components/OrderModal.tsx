@@ -63,22 +63,22 @@ export default function OrderModal({ product, onClose }: Props) {
         animate={{ opacity: isClosing ? 0 : 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="modal-backdrop fixed inset-0 z-[100] flex items-end justify-center bg-navy/70 p-0 sm:items-center sm:p-4"
+        className="modal-backdrop fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-navy/70 sm:p-4 p-0"
         onClick={handleClose}
       >
         <motion.div
-          initial={{ opacity: 0, y: 100, scale: 0.9, rotateX: 10 }}
-          animate={{ 
-            opacity: isClosing ? 0 : 1, 
-            y: isClosing ? 100 : 0, 
-            scale: isClosing ? 0.9 : 1,
-            rotateX: isClosing ? 10 : 0
-          }}
-          exit={{ opacity: 0, y: 60, scale: 0.95 }}
-          transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          onClick={(e) => e.stopPropagation()}
-          className="relative max-h-[95vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-cream shadow-2xl shadow-navy/20 sm:rounded-3xl"
-        >
+        initial={{ opacity: 0, y: 100, scale: 0.9 }}
+        animate={{ 
+          opacity: isClosing ? 0 : 1, 
+          y: isClosing ? 100 : 0, 
+          scale: isClosing ? 0.9 : 1,
+        }}
+        exit={{ opacity: 0, y: 60, scale: 0.95 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        onClick={(e) => e.stopPropagation()}
+        className="relative max-h-[95vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-cream shadow-2xl shadow-navy/20 sm:rounded-3xl"
+        style={{ zIndex: 10 }}
+      >
           {/* Header with Image */}
           <div className="relative h-56 w-full overflow-hidden sm:h-64">
             <motion.div
