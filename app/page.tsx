@@ -22,9 +22,9 @@ export default async function HomePage() {
 
   return (
     <>
+      <Header />
       <main>
         <Hero />
-        <Header />
         <ProductGrid products={products || []} />
         <AboutSection />
       </main>
