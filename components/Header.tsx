@@ -104,17 +104,17 @@ export default function Header() {
             whileTap={{ scale: 0.95 }}
           >
             <motion.span
-              animate={{ rotate: menuOpen ? 45, y: 7 } : { rotate: 0, y: 0 }}
+              animate={menuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
               transition={{ duration: 0.3 }}
               className="h-[2px] w-5 rounded-full bg-gold"
             />
             <motion.span
-              animate={{ opacity: menuOpen ? 0 : 1, scaleX: menuOpen ? 0 : 1 }}
+              animate={menuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
               transition={{ duration: 0.3 }}
               className="h-[2px] w-5 rounded-full bg-gold"
             />
             <motion.span
-              animate={{ rotate: menuOpen ? -45, y: -7 } : { rotate: 0, y: 0 }}
+              animate={menuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
               transition={{ duration: 0.3 }}
               className="h-[2px] w-5 rounded-full bg-gold"
             />
