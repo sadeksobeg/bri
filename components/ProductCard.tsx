@@ -16,99 +16,83 @@ export default function ProductCard({ product, index, onOrder, priority = false 
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
+      viewport={{ once: true, margin: "-30px" }}
       transition={{ 
-        duration: 0.6, 
-        delay: Math.min(index * 0.1, 0.5),
+        duration: 0.5, 
+        delay: Math.min(index * 0.08, 0.4),
+        ease: [0.22, 1, 0.36, 1],
       }}
-      className="group relative flex flex-col overflow-hidden rounded-2xl bg-gradient-to-b from-white/[0.08] to-white/[0.02] border border-white/[0.08] backdrop-blur-sm transition-all duration-500 hover:border-gold/30 hover:bg-white/[0.12]"
+      className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
     >
-      {/* Image Section */}
-      <div className="relative aspect-square overflow-hidden">
+      {/* Image Section - Clean, no text overlay */}
+      <div className="relative aspect-square overflow-hidden bg-gray-100">
         {hasImage ? (
           <Image
             src={product.image}
             alt={product.name}
             fill
             priority={priority}
-            className="object-cover transition-transform duration-700 group-hover:scale-110"
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         ) : (
-          <div className="flex h-full flex-col items-center justify-center bg-gradient-to-br from-gold/10 to-transparent">
-            <div className="rounded-full bg-gold/20 p-6">
-              <svg className="h-12 w-12 text-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="flex h-full flex-col items-center justify-center bg-gradient-to-br from-amber-50 to-orange-50">
+            <div className="rounded-full bg-amber-100 p-6">
+              <svg className="h-12 w-12 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
               </svg>
             </div>
-            <h4 className="mt-4 font-semibold text-white/80">{product.name}</h4>
+            <h4 className="mt-4 font-semibold text-gray-700">{product.name}</h4>
           </div>
         )}
 
-        {/* Badges - Top Right */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+        {/* Badges - Outside image area */}
+        <div className="absolute top-3 right-3 z-10 flex flex-col gap-2">
           {product.isFeatured && (
-            <motion.span 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-gold to-gold/80 px-3 py-1 text-xs font-bold text-black shadow-lg"
-            >
-              <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
-              مميز
-            </motion.span>
+            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400 px-3 py-1 text-xs font-bold text-black shadow-sm">
+              ⭐ مميز
+            </span>
           )}
           {product.isBestSeller && (
-            <motion.span 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-rose-500 to-rose-600 px-3 py-1 text-xs font-bold text-white shadow-lg"
-            >
+            <span className="inline-flex items-center gap-1 rounded-full bg-rose-500 px-3 py-1 text-xs font-bold text-white shadow-sm">
               الأكثر مبيعاً
-            </motion.span>
+            </span>
           )}
           {product.isNew && (
-            <motion.span 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-600 px-3 py-1 text-xs font-bold text-white shadow-lg"
-            >
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500 px-3 py-1 text-xs font-bold text-white shadow-sm">
               جديد
-            </motion.span>
+            </span>
           )}
         </div>
-
-        {/* Category Badge - Top Left */}
-        {product.category && (
-          <div className="absolute top-3 left-3 z-10">
-            <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white/90 backdrop-blur-sm border border-white/10">
-              {product.category}
-            </span>
-          </div>
-        )}
       </div>
 
-      {/* Content Section */}
+      {/* Content Section - Clean card below image */}
       <div className="flex flex-1 flex-col p-5">
+        {/* Category */}
+        {product.category && (
+          <span className="mb-2 text-xs font-medium uppercase tracking-wider text-amber-600">
+            {product.category}
+          </span>
+        )}
+        
         {/* Product Name */}
-        <h3 className="mb-2 font-semibold leading-tight text-white line-clamp-1 group-hover:text-gold transition-colors duration-300">
+        <h3 className="mb-2 text-lg font-bold leading-tight text-gray-900 group-hover:text-amber-700 transition-colors">
           {product.name}
         </h3>
         
         {/* Description */}
         {product.description && (
-          <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-white/50">
+          <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-gray-500">
             {product.description}
           </p>
         )}
 
         {/* Weight & Pieces */}
         {product.weight && (
-          <div className="mb-4 flex items-center gap-3 text-sm text-white/40">
-            <svg className="h-4 w-4 text-gold/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="mb-4 flex items-center gap-3 text-sm text-gray-400">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
             </svg>
             <span>{product.weight}</span>
@@ -116,31 +100,20 @@ export default function ProductCard({ product, index, onOrder, priority = false 
           </div>
         )}
 
-        {/* Spacer to push button to bottom */}
+        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* CTA Button */}
-        <div className="pt-3 border-t border-white/10">
-          <motion.button
-            type="button"
-            onClick={() => {
-              onOrder(product);
-            }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-gold to-gold/90 px-5 py-3 text-sm font-semibold text-black shadow-lg shadow-gold/20 transition-all duration-300 active:shadow-gold/40"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            اطلب الآن
-          </motion.button>
-        </div>
-      </div>
-
-      {/* Hover Glow Effect */}
-      <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-gold/5 to-transparent" />
+        {/* CTA Button - Full Width, Clean */}
+        <button
+          type="button"
+          onClick={() => onOrder(product)}
+          className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-all duration-300 hover:from-amber-600 hover:to-amber-700 hover:shadow-md active:scale-[0.98]"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          اطلب الآن
+        </button>
       </div>
     </motion.article>
   );
