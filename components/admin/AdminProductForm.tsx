@@ -6,6 +6,69 @@ import { motion } from "framer-motion";
 import type { ProductDTO, CategoryDTO } from "@/lib/types";
 import type { ProductOptionGroup } from "@/lib/whatsapp";
 
+// Compress image before upload (max 1MB, 1200px width)
+async function compressImage(file: File): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image();
+    img.onload = () => {
+      const MAX_WIDTH = 1200;
+      const MAX_HEIGHT = 1200;
+
+      let width = img.width;
+      let height = img.height;
+
+      // Calculate new dimensions
+      if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+        const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = window.document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("Could not get canvas context"));
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error("Could not create blob"));
+            return;
+          }
+          // If already small enough, return as-is
+          if (blob.size <= 1024 * 1024) {
+            resolve(new File([blob], file.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" }));
+            return;
+          }
+          // Try lower quality
+          canvas.toBlob(
+            (blob2) => {
+              if (!blob2) {
+                reject(new Error("Could not create blob"));
+                return;
+              }
+              resolve(new File([blob2], file.name.replace(/\.\w+$/, ".webp"), { type: "image/webp" }));
+            },
+            "image/webp",
+            0.7
+          );
+        },
+        "image/webp",
+        0.85
+      );
+    };
+    img.onerror = () => reject(new Error("Could not load image"));
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 type Props = {
   product?: ProductDTO | null;
   categories: CategoryDTO[];
@@ -70,8 +133,11 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
     setUploading(true);
 
     try {
+      // Compress image before uploading (max 1MB, 1200px width)
+      const compressedFile = await compressImage(file);
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", compressedFile);
 
       const res = await fetch("/api/admin/upload", {
         method: "POST",
@@ -86,7 +152,8 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
 
       const data = await res.json();
       setImageUrl(data.path);
-    } catch {
+    } catch (err) {
+      console.error("Upload error:", err);
       setUploadError("فشل رفع الصورة");
     } finally {
       setUploading(false);
