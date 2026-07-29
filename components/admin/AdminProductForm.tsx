@@ -73,7 +73,7 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("/api/upload", {
+      const res = await fetch("/api/admin/upload", {
         method: "POST",
         body: formData,
       });
@@ -85,7 +85,7 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
       }
 
       const data = await res.json();
-      setImageUrl(data.url);
+      setImageUrl(data.path);
     } catch {
       setUploadError("فشل رفع الصورة");
     } finally {
