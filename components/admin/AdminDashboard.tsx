@@ -254,7 +254,6 @@ export default function AdminDashboard() {
 
   const fetchCategories = useCallback(async () => {
     try {
-      // Try to init categories first
       await fetch("/api/admin/categories/init", { method: "POST" });
       
       const res = await fetch("/api/admin/categories");
@@ -503,13 +502,13 @@ export default function AdminDashboard() {
           ) : (
             <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               {activeTab === "products" && (
-                <>
+                <div>
                   {/* Stats Cards */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05 }}
-                    className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4"
+                    className="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-3"
                   >
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
@@ -571,11 +570,13 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                     </motion.div>
+                  </motion.div>
 
+                  {/* Header & Actions */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-8 flex flex-wrap items-center justify-between gap-4"
+                    className="mb-6 flex flex-wrap items-center justify-between gap-4"
                   >
                     <div>
                       <h2 className="font-[family-name:var(--font-heading)] font-bold text-navy" style={{ fontSize: 'var(--text-h1)' }}>
@@ -603,9 +604,9 @@ export default function AdminDashboard() {
                       </svg>
                       <span className="relative">إضافة منتج</span>
                     </motion.button>
-                </motion.div>
+                  </motion.div>
 
-                {/* Filters */}
+                  {/* Filters */}
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -723,7 +724,7 @@ export default function AdminDashboard() {
                       </div>
                     </motion.div>
                   )}
-                </>
+                </div>
               )}
 
               {activeTab === "categories" && (
