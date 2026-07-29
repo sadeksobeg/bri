@@ -126,7 +126,7 @@ export default function ProductCard({ product, index, onOrder, priority = false 
 
           {/* Price & CTA */}
           <div className="flex items-center justify-between pt-3 border-t border-white/10">
-            {product.price > 0 && (
+            {product.price != null && product.price > 0 && (
               <div className="flex items-baseline gap-1.5">
                 <span className="text-2xl font-bold text-gold">
                   {product.price.toLocaleString('ar-SY')}
