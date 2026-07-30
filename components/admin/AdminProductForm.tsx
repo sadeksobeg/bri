@@ -171,8 +171,6 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   
-  const [weight, setWeight] = useState(product?.weight || "");
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -285,7 +283,8 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
         name: name.trim(),
         description: description.trim(),
         ingredients: ingredients.trim() || null,
-        weight: weight.trim() || null,
+        weight: null, // Now handled via options
+        pieces: null, // Now handled via options
         category: category.trim(),
         sortOrder: sortOrder ? parseInt(sortOrder, 10) : 0,
         isActive,
@@ -453,18 +452,14 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
               <textarea rows={2} value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="مثال: كاكاو، سكر..." className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500 focus:bg-amber-500/5" />
             </div>
 
-            {!isCake && (
-              <div>
-                <label className="mb-2 block text-sm font-medium text-white/70">الوزن</label>
-                <input 
-                  type="text" 
-                  value={weight}
-                  onChange={(e) => setWeight(e.target.value)}
-                  placeholder="مثال: 250غ، 500غ، 1كغ"
-                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500 focus:bg-amber-500/5"
-                />
-              </div>
-            )}
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
+              <p className="mb-2 text-xs text-amber-400/80">
+                <svg className="inline h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {isCake ? "استخدم خيارات المنتج أدناه لإضافة المقاسات والحشوات ونكهات الكريمة" : "استخدم خيارات المنتج أدناه لتحديد الأوزان وعدد القطع المتاحة"}
+              </p>
+            </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4">

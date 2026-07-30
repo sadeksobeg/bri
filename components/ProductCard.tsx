@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { motion } from "framer-motion";
 import type { ProductDTO } from "@/lib/types";
+import { parseProductOptions } from "@/lib/whatsapp";
 
 type Props = {
   product: ProductDTO;
@@ -14,6 +15,13 @@ type Props = {
 export default function ProductCard({ product, index, onOrder, priority = false }: Props) {
   const hasImage = product.image && product.image !== "/products/placeholder.jpg";
   const isCake = product.category === "كيك";
+  
+  // Parse product options
+  const optionGroups = parseProductOptions(product.options);
+  
+  // Get first option group for display (usually size/weight)
+  const primaryOption = optionGroups[0];
+  const displayOptions = primaryOption?.values.slice(0, 3).join(" • ") || "";
 
   return (
     <motion.article
@@ -141,14 +149,17 @@ export default function ProductCard({ product, index, onOrder, priority = false 
           </p>
         )}
 
-        {/* Weight & Pieces */}
-        {product.weight && (
+        {/* Options Display */}
+        {displayOptions && (
           <div className="mb-4 flex items-center gap-3 text-sm text-white/30">
             <svg className="h-4 w-4 text-amber-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+              {isCake ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+              )}
             </svg>
-            <span>{product.weight}</span>
-            {product.pieces && <span>• {product.pieces} قطعة</span>}
+            <span>{displayOptions}</span>
           </div>
         )}
 
