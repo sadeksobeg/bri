@@ -27,7 +27,7 @@ export default function Header() {
         className={`fixed top-0 right-0 left-0 z-50 transition-all duration-500 ${
           scrolled
             ? "bg-[#0a0a0a]/95 backdrop-blur-xl border-b border-white/5 shadow-2xl"
-            : "bg-transparent"
+            : "bg-gradient-to-b from-black/80 via-black/50 to-transparent backdrop-blur-sm"
         }`}
       >
         <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
@@ -48,11 +48,11 @@ export default function Header() {
               />
             </motion.div>
             
-            <div>
+            <div className="flex flex-col">
               <span className="font-['Amiri'] text-xl font-bold tracking-widest text-white transition-colors lg:text-2xl">
                 BRI<span className="text-amber-400">v</span>IA
               </span>
-              <p className="hidden text-[7px] tracking-[0.25em] text-amber-400/50 lg:block">
+              <p className="text-[6px] tracking-[0.3em] text-amber-400/60 lg:text-[7px]">
                 PREMIUM CONFECTIONERY
               </p>
             </div>
