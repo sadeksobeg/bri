@@ -1,6 +1,7 @@
 export type ProductOptionGroup = {
   name: string;
   values: string[];
+  type?: "fixed" | "input"; // fixed = just display, input = user enters value
 };
 
 export type OrderDetails = {

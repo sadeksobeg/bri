@@ -15,15 +15,17 @@ export default function OrderModal({ product, onClose }: Props) {
   const optionGroups = useMemo(() => parseProductOptions(product.options), [product.options]);
   const isCake = product.category === "كيك";
 
-  const [quantity, setQuantity] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
+  const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState("");
   const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     const defaults: Record<string, string> = {};
     optionGroups.forEach((g) => {
-      if (g.values[0]) defaults[g.name] = g.values[0];
+      if (g.type !== "input" && g.values[0]) {
+        defaults[g.name] = g.values[0];
+      }
     });
     setSelectedOptions(defaults);
   }, [optionGroups]);
@@ -46,182 +48,69 @@ export default function OrderModal({ product, onClose }: Props) {
   }, [handleClose]);
 
   const handleOrder = () => {
+    const allOptions: Record<string, string> = {};
+    
+    optionGroups.forEach((g) => {
+      if (g.type === "input") {
+        if (inputValues[g.name]) {
+          allOptions[g.name] = inputValues[g.name];
+        }
+      } else if (selectedOptions[g.name]) {
+        allOptions[g.name] = selectedOptions[g.name];
+      }
+    });
+
     const url = buildWhatsAppUrl({
       productName: product.name,
       price: product.price ?? 0,
-      quantity,
-      selectedOptions,
+      quantity: 1,
+      selectedOptions: allOptions,
       notes,
     });
     window.open(url, "_blank");
     handleClose();
   };
 
-  // Get icon for cake size - professional icons
   const getCakeIcon = (value: string) => {
     const size = value.toLowerCase();
-    
-    // Small - Single serving
     if (size.includes("4 أشخاص") || size.includes("12") || size.includes("صغير")) {
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <circle cx="12" cy="12" r="6" strokeLinecap="round" strokeLinejoin="round"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v2m0 8v2m-3-5h6"/>
-        </svg>
-      );
+      return <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><circle cx="12" cy="12" r="6" strokeLinecap="round" strokeLinejoin="round"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 6v2m0 8v2m-3-5h6"/></svg>;
     }
-    
-    // Medium - Family size
     if (size.includes("6 أشخاص") || size.includes("16") || size.includes("متوسط")) {
-      return (
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <circle cx="12" cy="12" r="8" strokeLinecap="round" strokeLinejoin="round"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m0-16c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
-      );
+      return <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg>;
     }
-    
-    // Large - Party size
     if (size.includes("10 أشخاص") || size.includes("20") || size.includes("كبير")) {
-      return (
-        <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <circle cx="12" cy="12" r="9" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="12" cy="12" r="6" strokeLinecap="round" strokeLinejoin="round"/>
-          <circle cx="12" cy="12" r="3"/>
-        </svg>
-      );
+      return <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="3"/></svg>;
     }
-    
-    // Special - Extra large
-    if (size.includes("15") || size.includes("عائلي") || size.includes("كبير جداً")) {
-      return (
-        <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3"/>
-        </svg>
-      );
-    }
-    
-    // Default size icon
-    return (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
-      </svg>
-    );
+    return <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>;
   };
 
-  // Get icon for filling - professional food icons
   const getFillingIcon = (value: string) => {
     const filling = value.toLowerCase();
-    
-    // Chocolate - Cocoa bar icon
     if (filling.includes("شوكولاتة") || filling.includes("شوكو")) {
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <rect x="3" y="6" width="18" height="12" rx="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18M9 6v12M15 6v12"/>
-        </svg>
-      );
+      return <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><rect x="3" y="6" width="18" height="12" rx="2"/><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M3 14h18M9 6v12M15 6v12"/></svg>;
     }
-    
-    // Caramel - Honey/syrup drip icon
-    if (filling.includes("كراميل") || filling.includes("كراميل")) {
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-        </svg>
-      );
+    if (filling.includes("كراميل")) {
+      return <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>;
     }
-    
-    // Nuts - Almond/walnut icon
     if (filling.includes("مكسرات") || filling.includes("لوز") || filling.includes("جوز")) {
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c-1.5 0-3 .5-4 1.5C7 5.5 6.5 7 6.5 8.5c0 3 2 5.5 4.5 7.5 2.5-2 4.5-4.5 4.5-7.5 0-1.5-.5-3-1.5-4C15 3.5 13.5 3 12 3z"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v8m-4-4l4 4 4-4"/>
-        </svg>
-      );
+      return <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 3c-1.5 0-3 .5-4 1.5C7 5.5 6.5 7 6.5 8.5c0 3 2 5.5 4.5 7.5 2.5-2 4.5-4.5 4.5-7.5 0-1.5-.5-3-1.5-4C15 3.5 13.5 3 12 3z"/></svg>;
     }
-    
-    // Fruits - Fresh fruit icon
     if (filling.includes("فواكه") || filling.includes("فراولة") || filling.includes("توت")) {
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6c-3 0-5.5 2-6 5 .5-1 2-2 4-2s3.5 1 4 2c-.5-3-3-5-6-5z"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 9c-4 0-7 3-7 7 0 3 2 5 5 6 1 0 2 0 2 0s1 0 2 0c3-1 5-3 5-6 0-4-3-7-7-7z"/>
-        </svg>
-      );
+      return <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 6c-3 0-5.5 2-6 5 .5-1 2-2 4-2s3.5 1 4 2c-.5-3-3-5-6-5z"/><path strokeLinecap="round" strokeLinejoin="round" d="M12 9c-4 0-7 3-7 7 0 3 2 5 5 6 1 0 2 0 2 0s1 0 2 0c3-1 5-3 5-6 0-4-3-7-7-7z"/></svg>;
     }
-    
-    // Vanilla/Custard - Cream swirl
-    if (filling.includes("فانيليا") || filling.includes("كريمة")) {
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M7 17.5c0 2.5 2.5 4.5 5 4.5s5-2 5-4.5c0-1.5-1-3-2.5-4-1.5 1-2.5 2.5-2.5 4z"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6c-2 0-4 1-4 3 0 1.5 1 2.5 2 3 1-.5 2-1.5 2-3s-1-3-3-3z"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6"/>
-        </svg>
-      );
-    }
-    
-    // Red velvet
-    if (filling.includes("ريد") || filling.includes("قلوب")) {
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-        </svg>
-      );
-    }
-    
-    // Default flavor icon
-    return (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
-      </svg>
-    );
+    return <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>;
   };
 
-  // Get icon for cream flavor - specialized cream icons
   const getCreamIcon = (value: string) => {
     const cream = value.toLowerCase();
-    
-    // Whipped cream
-    if (cream.includes("شانتيه") || cream.includes("شانتي") || cream.includes("مخفوق")) {
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M7 20c0-2 1-3 3-4 2 1 4 2 4 4 0 3-4 5-7 5s-7-2-7-5c0-2 2-3 4-4 2 1 3 2 3 4z"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10 8c0-1.5 1-3 2-4 1 1 2 2.5 2 4"/>
-        </svg>
-      );
+    if (cream.includes("شانتيه") || cream.includes("مخفوق")) {
+      return <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7 20c0-2 1-3 3-4 2 1 4 2 4 4 0 3-4 5-7 5s-7-2-7-5c0-2 2-3 4-4 2 1 3 2 3 4z"/></svg>;
     }
-    
-    // Butter cream
-    if (cream.includes("زبدة") || cream.includes("زبدي")) {
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <rect x="3" y="10" width="18" height="8" rx="2" strokeLinecap="round" strokeLinejoin="round"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M7 10V8a5 5 0 0110 0v2"/>
-        </svg>
-      );
+    if (cream.includes("زبدة")) {
+      return <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><rect x="3" y="10" width="18" height="8" rx="2"/><path strokeLinecap="round" strokeLinejoin="round" d="M7 10V8a5 5 0 0110 0v2"/></svg>;
     }
-    
-    // Ganache
-    if (cream.includes("غاناش") || cream.includes("ganache")) {
-      return (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c-2 0-4 1-4 3 0 1 1 2 2 3-2 0-3 1-3 2 0 2 2 4 5 4s5-2 5-4c0-1-1-2-3-2 1-1 2-2 2-3 0-2-2-3-4-3z"/>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8 14c0 2 2 4 4 4s4-2 4-4"/>
-        </svg>
-      );
-    }
-    
-    // Default cream icon
-    return (
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
-      </svg>
-    );
+    return <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>;
   };
 
   return (
@@ -255,14 +144,9 @@ export default function OrderModal({ product, onClose }: Props) {
               className="object-cover"
               sizes="512px"
             />
-            
-            {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-[#1a1a1a]/30 to-transparent" />
-            
-            {/* Decorative top line */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400" />
 
-            {/* Close Button */}
             <motion.button
               type="button"
               onClick={handleClose}
@@ -276,7 +160,6 @@ export default function OrderModal({ product, onClose }: Props) {
               </svg>
             </motion.button>
 
-            {/* Product Info */}
             <div className="absolute bottom-4 right-5 left-5">
               <span className="mb-1 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-amber-400">
                 {isCake && (
@@ -294,29 +177,13 @@ export default function OrderModal({ product, onClose }: Props) {
 
           {/* Content */}
           <div className="space-y-5 p-5 sm:p-6">
-            {/* Description */}
             {product.description && (
               <p className="text-sm leading-relaxed text-white/60">
                 {product.description}
               </p>
             )}
 
-            {/* Weight (for non-cake products) */}
-            {!isCake && product.weight && (
-              <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
-                  <svg className="h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs text-white/40">الوزن</p>
-                  <p className="font-medium text-amber-400">{product.weight}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Options - Beautiful Grid for Cakes */}
+            {/* Options */}
             {optionGroups.length > 0 && (
               <div className="space-y-6">
                 {optionGroups.map((group) => (
@@ -324,24 +191,37 @@ export default function OrderModal({ product, onClose }: Props) {
                     <label className="mb-3 flex items-center gap-2 text-sm font-medium text-white/80">
                       <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
                         {group.name === "المقاس" ? (
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                          </svg>
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
                         ) : group.name === "الحشوة" ? (
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                          </svg>
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
                         ) : (
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                          </svg>
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
                         )}
                       </span>
                       {group.name}
+                      {group.type === "input" && (
+                        <span className="text-xs text-emerald-400">(يُدخلها العميل)</span>
+                      )}
                     </label>
                     
-                    {isCake ? (
-                      // Cake-specific beautiful grid
+                    {group.type === "input" ? (
+                      // Input type - user enters value
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={inputValues[group.name] || ""}
+                          onChange={(e) => setInputValues((prev) => ({ ...prev, [group.name]: e.target.value }))}
+                          placeholder={`أدخل ${group.name} المطلوب`}
+                          className="w-full rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-white placeholder:text-white/30 outline-none transition-all focus:border-emerald-500 focus:bg-emerald-500/10"
+                        />
+                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                          <svg className="h-5 w-5 text-emerald-400/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </div>
+                      </div>
+                    ) : isCake ? (
+                      // Cake fixed options - beautiful grid
                       <div className="grid grid-cols-1 gap-2">
                         {group.values.map((value) => {
                           const isSelected = selectedOptions[group.name] === value;
@@ -358,7 +238,6 @@ export default function OrderModal({ product, onClose }: Props) {
                                   : "border-white/10 bg-white/5 text-white/70 hover:border-amber-500/30 hover:bg-amber-500/5"
                               }`}
                             >
-                              {/* Icon */}
                               <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
                                 isSelected ? "bg-amber-500 text-black" : "bg-white/10 text-white/50 group-hover:bg-amber-500/20 group-hover:text-amber-400"
                               }`}>
@@ -366,22 +245,12 @@ export default function OrderModal({ product, onClose }: Props) {
                                 {group.name === "الحشوة" && getFillingIcon(value)}
                                 {group.name === "نكهة الكريمة" && getCreamIcon(value)}
                               </div>
-                              
-                              {/* Value */}
                               <span className={`flex-1 font-medium ${isSelected ? "text-white" : ""}`}>
                                 {value}
                               </span>
-                              
-                              {/* Check */}
                               {isSelected && (
-                                <motion.div
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-black"
-                                >
-                                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                  </svg>
+                                <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-black">
+                                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                                 </motion.div>
                               )}
                             </motion.button>
@@ -389,7 +258,7 @@ export default function OrderModal({ product, onClose }: Props) {
                         })}
                       </div>
                     ) : (
-                      // Regular options - chips style
+                      // Regular fixed options - chips style
                       <div className="flex flex-wrap gap-2">
                         {group.values.map((value) => (
                           <motion.button
@@ -413,46 +282,6 @@ export default function OrderModal({ product, onClose }: Props) {
                 ))}
               </div>
             )}
-
-            {/* Quantity */}
-            <div>
-              <label className="mb-3 block text-sm font-medium text-white/80">
-                الكمية
-              </label>
-              <div className="flex items-center gap-4">
-                <motion.button
-                  type="button"
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  disabled={quantity <= 1}
-                  className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white/10 bg-white/5 text-xl text-white transition-all hover:border-amber-500 hover:bg-amber-500/10 hover:text-amber-400 disabled:cursor-not-allowed disabled:opacity-30"
-                >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M20 12H4" />
-                  </svg>
-                </motion.button>
-                <motion.span 
-                  key={quantity}
-                  initial={{ scale: 1.2, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="min-w-[3rem] text-center font-['Amiri'] text-2xl font-bold text-amber-400"
-                >
-                  {quantity}
-                </motion.span>
-                <motion.button
-                  type="button"
-                  onClick={() => setQuantity((q) => q + 1)}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white/10 bg-white/5 text-xl text-white transition-all hover:border-amber-500 hover:bg-amber-500/10 hover:text-amber-400"
-                >
-                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 4v16m8-8H4" />
-                  </svg>
-                </motion.button>
-              </div>
-            </div>
 
             {/* Notes */}
             <div>
@@ -486,7 +315,6 @@ export default function OrderModal({ product, onClose }: Props) {
             </motion.button>
           </div>
 
-          {/* Bottom decorative line */}
           <div className="h-1 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
         </motion.div>
       </motion.div>

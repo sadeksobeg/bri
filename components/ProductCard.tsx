@@ -29,8 +29,17 @@ export default function ProductCard({ product, index, onOrder, priority = false 
   const isCake = product.category === "كيك";
   
   const optionGroups = parseProductOptions(product.options);
-  const primaryOption = optionGroups[0];
-  const displayText = primaryOption?.values.slice(0, 3).join(" • ");
+  
+  // Get fixed options only for display
+  const fixedOptions = optionGroups.filter(g => g.type !== "input");
+  const inputOptions = optionGroups.filter(g => g.type === "input");
+  
+  const displayText = fixedOptions
+    .map(g => g.values.slice(0, 3).join(" • "))
+    .filter(Boolean)
+    .join(" | ");
+
+  const hasInputOptions = inputOptions.length > 0;
 
   return (
     <motion.article
@@ -153,6 +162,19 @@ export default function ProductCard({ product, index, onOrder, priority = false 
           <div className="mb-4 flex items-center gap-2 text-sm text-white/40">
             {isCake ? <ScaleIcon /> : <WeightIcon />}
             <span>{displayText}</span>
+          </div>
+        )}
+
+        {hasInputOptions && (
+          <div className="mb-2 flex flex-wrap gap-1">
+            {inputOptions.map((opt) => (
+              <span key={opt.name} className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-xs text-emerald-400">
+                <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                {opt.name}
+              </span>
+            ))}
           </div>
         )}
 

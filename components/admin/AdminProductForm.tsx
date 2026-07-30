@@ -89,23 +89,29 @@ function parseOptions(json: string | null | undefined): ProductOptionGroup[] {
   if (!json) return [];
   try {
     const parsed = JSON.parse(json);
-    if (Array.isArray(parsed)) return parsed;
-    return [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed.map((g: ProductOptionGroup) => ({
+      name: g.name || "",
+      values: Array.isArray(g.values) ? g.values : [],
+      type: g.type || "fixed",
+    }));
   } catch {
     return [];
   }
 }
 
-const CAKE_PRESETS = {
-  size: { name: "المقاس", values: ["4 أشخاص - 12سم", "6 أشخاص - 16سم", "10 أشخاص - 20سم", "12 شخص - 24سم", "16 شخص - 28سم"] },
-  filling: { name: "الحشوة", values: ["شوكولاتة", "كراميل", "مكسرات", "فواكه طازجة", "صوص فريز", "صوص أناناس", "صوص فواكه"] },
-  creamFlavor: { name: "نكهة الكريمة", values: ["كابتشينو", "ميلو", "هوت شوكلت", "نسكافيه"] },
-};
+const CAKE_PRESETS = [
+  { name: "المقاس", values: ["4 أشخاص - 12سم", "6 أشخاص - 16سم", "10 أشخاص - 20سم", "12 شخص - 24سم", "16 شخص - 28سم"], type: "fixed" as const },
+  { name: "الحشوة", values: ["شوكولاتة", "كراميل", "مكسرات", "فواكه طازجة", "صوص فريز", "صوص أناناس"], type: "fixed" as const },
+  { name: "نكهة الكريمة", values: ["كابتشينو", "ميلو", "هوت شوكلت", "نسكافيه"], type: "fixed" as const },
+];
 
-const PRODUCT_PRESETS = {
-  weight: { name: "الوزن", values: ["250غ", "500غ", "1كغ"] },
-  pieces: { name: "عدد القطع", values: ["6 قطع", "12 قطع", "24 قطع", "36 قطع"] },
-};
+const PRODUCT_PRESETS = [
+  { name: "الوزن", values: ["250غ", "500غ", "1كغ"], type: "fixed" as const },
+  { name: "عدد القطع", values: ["6 قطع", "12 قطع", "24 قطع", "36 قطع"], type: "fixed" as const },
+  { name: "الوزن المطلوب", values: [], type: "input" as const },
+  { name: "عدد القطع المطلوب", values: [], type: "input" as const },
+];
 
 export default function AdminProductForm({ product, categories, onSaved, onCancel }: Props) {
   const [name, setName] = useState(product?.name || "");
@@ -121,8 +127,8 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
     const parsed = product ? parseOptions(product.options) : [];
     if (parsed.length > 0) return parsed;
     return category === "كيك" 
-      ? [{ name: "المقاس", values: ["4 أشخاص - 12سم", "6 أشخاص - 16سم", "10 أشخاص - 20سم"] }]
-      : [{ name: "الوزن", values: ["250غ", "500غ"] }];
+      ? [{ name: "المقاس", values: ["4 أشخاص - 12سم", "6 أشخاص - 16سم", "10 أشخاص - 20سم"], type: "fixed" }]
+      : [{ name: "الوزن", values: ["250غ", "500غ"], type: "fixed" }];
   });
   const [isCake, setIsCake] = useState(category === "كيك");
   
@@ -138,20 +144,13 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
     setIsCake(category === "كيك");
   }, [category]);
 
-  const applyPreset = (presetKey: string) => {
-    const presetMap: Record<string, { name: string; values: string[] }> = {
-      ...CAKE_PRESETS,
-      ...PRODUCT_PRESETS,
-    };
-    const presetData = presetMap[presetKey];
-    if (!presetData) return;
-    
+  const applyPreset = (preset: typeof CAKE_PRESETS[0] | typeof PRODUCT_PRESETS[0]) => {
     setOptions((prev) => {
-      const existing = prev.findIndex((g) => g.name === presetData.name);
+      const existing = prev.findIndex((g) => g.name === preset.name);
       if (existing >= 0) {
-        return prev.map((g, i) => i === existing ? { ...presetData } : g);
+        return prev.map((g, i) => i === existing ? { ...preset } : g);
       }
-      return [...prev, { ...presetData }];
+      return [...prev, { ...preset }];
     });
   };
 
@@ -160,7 +159,7 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
   }
 
   function addOptionGroup() {
-    setOptions((prev) => [...prev, { name: "", values: [""] }]);
+    setOptions((prev) => [...prev, { name: "", values: [], type: "fixed" }]);
   }
 
   function removeOptionGroup(index: number) {
@@ -231,10 +230,11 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
         image: imageUrl || "/brand/packaging.png",
         options: JSON.stringify(
           options
-            .filter((g) => g.name.trim() && g.values.some((v) => v.trim()))
+            .filter((g) => g.name.trim())
             .map((g) => ({
               name: g.name.trim(),
-              values: g.values.map((v) => v.trim()).filter(Boolean),
+              values: g.type === "fixed" ? g.values.map((v) => v.trim()).filter(Boolean) : [],
+              type: g.type || "fixed",
             }))
         ),
       };
@@ -425,7 +425,7 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
           </div>
         </motion.div>
 
-        {/* Product Options - THE MAIN WAY TO CONTROL ALL PRODUCT DETAILS */}
+        {/* Product Options */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -434,7 +434,10 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
         >
           <div className="mb-4">
             <h4 className="flex items-center gap-2 border-r-2 border-amber-500/30 pr-3 font-medium text-white">خيارات المنتج</h4>
-            <p className="mt-2 text-xs text-white/50">أضف الخيارات التي سيختار منها العميل (المقاس، الوزن، عدد القطع، الحشوة، إلخ)</p>
+            <p className="mt-2 text-xs text-white/50">
+              <span className="text-emerald-400">ثابت:</span> يعرض الخيارات للاختيار | 
+              <span className="text-amber-400">إدخال:</span> المستخدم يدخل القيمة بنفسه
+            </p>
           </div>
 
           {/* Quick Presets */}
@@ -443,23 +446,24 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
             <div className="flex flex-wrap gap-2">
               {isCake ? (
                 <>
-                  <button type="button" onClick={() => applyPreset("size")} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
-                    المقاسات
-                  </button>
-                  <button type="button" onClick={() => applyPreset("filling")} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
-                    الحشوات
-                  </button>
-                  <button type="button" onClick={() => applyPreset("creamFlavor")} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
-                    نكهات الكريمة
-                  </button>
+                  {CAKE_PRESETS.filter(p => p.type === "fixed").map((preset) => (
+                    <button key={preset.name} type="button" onClick={() => applyPreset(preset)} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
+                      {preset.name}
+                    </button>
+                  ))}
                 </>
               ) : (
                 <>
-                  <button type="button" onClick={() => applyPreset("weight")} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
-                    الأوزان
+                  {PRODUCT_PRESETS.filter(p => p.type === "fixed").slice(0, 2).map((preset) => (
+                    <button key={preset.name} type="button" onClick={() => applyPreset(preset)} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
+                      {preset.name}
+                    </button>
+                  ))}
+                  <button type="button" onClick={() => applyPreset({ name: "الوزن", values: [], type: "input" })} className="flex items-center gap-2 rounded-full bg-emerald-500/20 px-4 py-2 text-sm text-emerald-300 transition-all hover:bg-emerald-500/30">
+                    ⚖️ وزن (يدخله العميل)
                   </button>
-                  <button type="button" onClick={() => applyPreset("pieces")} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
-                    عدد القطع
+                  <button type="button" onClick={() => applyPreset({ name: "عدد القطع", values: [], type: "input" })} className="flex items-center gap-2 rounded-full bg-emerald-500/20 px-4 py-2 text-sm text-emerald-300 transition-all hover:bg-emerald-500/30">
+                    🔢 عدد القطع (يدخله العميل)
                   </button>
                 </>
               )}
@@ -468,24 +472,39 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
 
           <div className="space-y-4">
             {options.map((group, gi) => (
-              <motion.div key={gi} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="group rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="mb-3 flex items-center gap-3">
+              <motion.div key={gi} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="mb-3 flex items-center gap-2">
                   <input 
                     value={group.name} 
                     onChange={(e) => updateOptionGroup(gi, { name: e.target.value })} 
-                    placeholder="اسم الخيار (مثال: المقاس، الوزن، عدد القطع)" 
+                    placeholder="اسم الخيار" 
                     className="flex-1 rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500" 
                   />
+                  <select
+                    value={group.type || "fixed"}
+                    onChange={(e) => updateOptionGroup(gi, { type: e.target.value as "fixed" | "input" })}
+                    className="rounded-xl border border-white/10 bg-[#0a0a0a] px-3 py-2.5 text-sm text-white outline-none transition-all focus:border-amber-500"
+                  >
+                    <option value="fixed" className="bg-[#1a1a1a]">ثابت</option>
+                    <option value="input" className="bg-[#1a1a1a]">إدخال</option>
+                  </select>
                   <button type="button" onClick={() => removeOptionGroup(gi)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
-                <input 
-                  value={group.values.join("، ")} 
-                  onChange={(e) => updateOptionGroup(gi, { values: e.target.value.split(/[،,]/).map((v) => v.trim()).filter(Boolean) })} 
-                  placeholder="القيم: 250غ، 500غ (افصل بين كل قيمة بفاصلة أو ترجمة عربية)" 
-                  className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500" 
-                />
+                
+                {group.type === "fixed" || !group.type ? (
+                  <input 
+                    value={group.values.join("، ")} 
+                    onChange={(e) => updateOptionGroup(gi, { values: e.target.value.split(/[،,]/).map((v) => v.trim()).filter(Boolean) })} 
+                    placeholder="الخيارات: 250غ، 500غ (افصل بفاصلة)" 
+                    className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500" 
+                  />
+                ) : (
+                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-xs text-emerald-400">
+                    العميل سيدخل هذه القيمة بنفسه عند الطلب
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
