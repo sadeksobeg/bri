@@ -14,7 +14,6 @@ type Props = {
 export default function OrderModal({ product, onClose }: Props) {
   const optionGroups = useMemo(() => parseProductOptions(product.options), [product.options]);
   const isCake = product.category === "كيك";
-  const isCake = product.category === "كيك";
 
   const [quantity, setQuantity] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
