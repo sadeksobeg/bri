@@ -14,6 +14,7 @@ type Props = {
 export default function OrderModal({ product, onClose }: Props) {
   const optionGroups = useMemo(() => parseProductOptions(product.options), [product.options]);
   const isCake = product.category === "كيك";
+  const isCake = product.category === "كيك";
 
   const [quantity, setQuantity] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
@@ -205,6 +206,21 @@ export default function OrderModal({ product, onClose }: Props) {
               <p className="text-sm leading-relaxed text-white/60">
                 {product.description}
               </p>
+            )}
+
+            {/* Weight (for non-cake products) */}
+            {!isCake && product.weight && (
+              <div className="flex items-center gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10">
+                  <svg className="h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-xs text-white/40">الوزن</p>
+                  <p className="font-medium text-amber-400">{product.weight}</p>
+                </div>
+              </div>
             )}
 
             {/* Options - Beautiful Grid for Cakes */}

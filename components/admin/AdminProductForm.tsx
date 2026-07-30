@@ -152,6 +152,8 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   
+  const [weight, setWeight] = useState(product?.weight || "");
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -246,6 +248,7 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
         name: name.trim(),
         description: description.trim(),
         ingredients: ingredients.trim() || null,
+        weight: weight.trim() || null,
         category: category.trim(),
         sortOrder: sortOrder ? parseInt(sortOrder, 10) : 0,
         isActive,
@@ -412,6 +415,19 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
               <label className="mb-2 block text-sm font-medium text-white/70">المكونات</label>
               <textarea rows={2} value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="مثال: كاكاو، سكر..." className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500 focus:bg-amber-500/5" />
             </div>
+
+            {!isCake && (
+              <div>
+                <label className="mb-2 block text-sm font-medium text-white/70">الوزن</label>
+                <input 
+                  type="text" 
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  placeholder="مثال: 250غ، 500غ، 1كغ"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500 focus:bg-amber-500/5"
+                />
+              </div>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4">
