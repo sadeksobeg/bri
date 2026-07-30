@@ -87,10 +87,28 @@ type Props = {
   onCancel: () => void;
 };
 
-function parseOptions(json: string): ProductOptionGroup[] {
+// Default options for cakes
+const DEFAULT_CAKE_OPTIONS = [
+  { name: "المقاس", values: ["4 أشخاص - 12سم", "6 أشخاص - 16سم", "10 أشخاص - 20سم"] },
+];
+
+// Default options for non-cake products
+const DEFAULT_PRODUCT_OPTIONS = [
+  { name: "الوزن", values: ["250غ", "500غ"] },
+];
+
+function getDefaultOptions(isCake: boolean): ProductOptionGroup[] {
+  return isCake ? DEFAULT_CAKE_OPTIONS : DEFAULT_PRODUCT_OPTIONS;
+}
+
+function parseOptions(json: string | null | undefined): ProductOptionGroup[] {
+  if (!json) return [];
   try {
     const parsed = JSON.parse(json);
-    return Array.isArray(parsed) ? parsed : [];
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
+    }
+    return [];
   } catch {
     return [];
   }
@@ -141,9 +159,10 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
   const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false);
   const [isBestSeller, setIsBestSeller] = useState(product?.isBestSeller ?? false);
   const [isNew, setIsNew] = useState(product?.isNew ?? false);
-  const [options, setOptions] = useState<ProductOptionGroup[]>(
-    product ? parseOptions(product.options) : [{ name: "المقاس", values: ["250غ", "500غ"] }]
-  );
+  const [options, setOptions] = useState<ProductOptionGroup[]>(() => {
+    const parsedOptions = product ? parseOptions(product.options) : [];
+    return parsedOptions.length > 0 ? parsedOptions : getDefaultOptions(category === "كيك");
+  });
   const [isCake, setIsCake] = useState(category === "كيك");
   const [cakePreset, setCakePreset] = useState<"size" | "filling" | "cream">("size");
   
@@ -162,6 +181,24 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
   useEffect(() => {
     setIsCake(category === "كيك");
   }, [category]);
+
+  // Update options when category changes (for new products only)
+  useEffect(() => {
+    // Only reset options if this is a new product (no existing product prop)
+    if (!product) {
+      const currentOptions = options;
+      // Check if options are still the defaults
+      const hasDefaultCakeOptions = currentOptions.length === 3 && 
+        currentOptions.some(g => g.name === "المقاس" && g.values.includes("4 أشخاص - 12سم"));
+      const hasDefaultProductOptions = currentOptions.length === 1 && 
+        currentOptions.some(g => g.name === "الوزن" && g.values.includes("250غ"));
+      
+      if ((category === "كيك" && hasDefaultProductOptions) ||
+          (category !== "كيك" && hasDefaultCakeOptions)) {
+        setOptions(getDefaultOptions(category === "كيك"));
+      }
+    }
+  }, [category, product]);
 
   // Apply cake preset
   const applyCakePreset = (preset: "size" | "filling" | "cream") => {
