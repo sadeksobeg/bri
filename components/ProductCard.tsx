@@ -13,6 +13,7 @@ type Props = {
 
 export default function ProductCard({ product, index, onOrder, priority = false }: Props) {
   const hasImage = product.image && product.image !== "/products/placeholder.jpg";
+  const isCake = product.category === "كيك";
 
   return (
     <motion.article
@@ -52,9 +53,15 @@ export default function ProductCard({ product, index, onOrder, priority = false 
           ) : (
             <div className="flex h-full w-full flex-col items-center justify-center bg-gradient-to-br from-amber-900/20 to-transparent">
               <div className="rounded-full bg-amber-500/10 p-8">
-                <svg className="h-16 w-16 text-amber-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
+                {isCake ? (
+                  <svg className="h-16 w-16 text-amber-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M18 3h.01M21 3a2 2 0 00-2-2M3 3a2 2 0 00-2 2m15-3h-3m-3 0h-3m-3 0h-3m12 3a2 2 0 002 2M3 18a2 2 0 002 2M3 6v12a2 2 0 002 2" />
+                  </svg>
+                ) : (
+                  <svg className="h-16 w-16 text-amber-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                )}
               </div>
             </div>
           )}
@@ -95,13 +102,29 @@ export default function ProductCard({ product, index, onOrder, priority = false 
             </motion.span>
           )}
         </div>
+
+        {/* Cake Icon Badge */}
+        {isCake && (
+          <div className="absolute right-4 top-4 z-10">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 backdrop-blur-sm shadow-lg">
+              <svg className="h-5 w-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M18 3h.01M21 3a2 2 0 00-2-2M3 3a2 2 0 00-2 2" />
+              </svg>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="relative flex flex-1 flex-col p-6">
         {/* Category */}
         {product.category && (
-          <span className="mb-2 text-xs font-medium uppercase tracking-wider text-amber-500/80">
+          <span className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-amber-500/80">
+            {isCake && (
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+              </svg>
+            )}
             {product.category}
           </span>
         )}

@@ -74,69 +74,21 @@ export default function Hero() {
       {/* Content */}
       <div className="relative z-10 flex min-h-screen flex-col justify-between p-6 sm:p-10 lg:p-16">
         
-        {/* Top */}
-        <motion.div
-          initial={{ opacity: 0, y: -30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="flex items-center justify-between"
-        >
-          {/* Logo */}
-          <div className="flex items-center gap-4">
-            <motion.div
-              whileHover={{ scale: 1.05, rotate: 2 }}
-              className="relative h-14 w-14 overflow-hidden rounded-full border-2 border-amber-500/50 shadow-[0_0_40px_rgba(251,191,36,0.3)] sm:h-16 sm:w-16"
-            >
-              <Image
-                src="/brand/logo.png"
-                alt="BRIVIA"
-                fill
-                className="object-cover"
-                sizes="64px"
-                priority
-              />
-            </motion.div>
-            <div>
-              <span className="font-['Amiri'] text-2xl font-bold tracking-widest text-white sm:text-3xl">
-                BRI<span className="text-amber-400">v</span>IA
-              </span>
-              <p className="hidden text-[8px] tracking-[0.3em] text-amber-400/60 sm:block sm:text-[9px]">
-                PREMIUM CONFECTIONERY
-              </p>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <motion.a
-            href="#products"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.5 }}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="group relative overflow-hidden rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-400 bg-[length:200%_100%] px-6 py-3 text-sm font-semibold text-black shadow-[0_10px_40px_rgba(251,191,36,0.4)] transition-all duration-500 hover:shadow-[0_10px_60px_rgba(251,191,36,0.6)] hover:bg-[position:100%_0] sm:px-8 sm:py-4"
-          >
-            <span className="relative z-10 flex items-center gap-2">
-              اكتشف مجموعتنا
-              <svg className="h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </span>
-          </motion.a>
-        </motion.div>
+        {/* Spacer for header */}
+        <div />
 
         {/* Center Content */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
           className="max-w-3xl"
         >
           {/* Pre-heading */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.6 }}
+            transition={{ delay: 0.4 }}
             className="mb-6 flex items-center gap-4"
           >
             <div className="h-[1px] w-16 bg-gradient-to-r from-transparent to-amber-500/60" />
@@ -149,7 +101,7 @@ export default function Hero() {
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7 }}
+            transition={{ delay: 0.5 }}
             className="mb-6 font-['Amiri'] text-5xl font-bold leading-tight text-white sm:text-6xl lg:text-7xl"
           >
             فخامة
@@ -162,7 +114,7 @@ export default function Hero() {
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9 }}
+            transition={{ delay: 0.6 }}
             className="mb-10 max-w-xl text-base leading-relaxed text-white/60 sm:text-lg"
           >
             حيث تلتقي الحرفية العربية بالفخامة العالمية، نصنع لك تجربة حلوى استثنائية لا تُنسى
@@ -172,7 +124,7 @@ export default function Hero() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1 }}
+            transition={{ delay: 0.7 }}
             className="flex flex-wrap items-center gap-4"
           >
             <motion.a
@@ -206,7 +158,7 @@ export default function Hero() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.3 }}
+            transition={{ delay: 0.8 }}
             className="mt-12 flex gap-12"
           >
             {[
@@ -226,7 +178,7 @@ export default function Hero() {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5 }}
+          transition={{ delay: 1 }}
           className="flex items-end justify-between"
         >
           {/* Dots */}

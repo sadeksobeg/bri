@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import type { ProductDTO } from "@/lib/types";
@@ -13,6 +13,7 @@ type Props = {
 
 export default function OrderModal({ product, onClose }: Props) {
   const optionGroups = useMemo(() => parseProductOptions(product.options), [product.options]);
+  const isCake = product.category === "كيك";
 
   const [quantity, setQuantity] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
@@ -55,6 +56,79 @@ export default function OrderModal({ product, onClose }: Props) {
     window.open(url, "_blank");
     handleClose();
   };
+
+  // Get icon for cake size
+  const getCakeIcon = (value: string) => {
+    if (value.includes("4 أشخاص") || value.includes("12سم")) {
+      return (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m0-16c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z" />
+        </svg>
+      );
+    }
+    if (value.includes("6 أشخاص") || value.includes("16سم")) {
+      return (
+        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m0-16c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z" />
+        </svg>
+      );
+    }
+    if (value.includes("10 أشخاص") || value.includes("20سم")) {
+      return (
+        <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m0-16c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z" />
+        </svg>
+      );
+    }
+    return (
+      <svg className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m0-16c0 4.418-3.582 8-8 8s-8-3.582-8-8 3.582-8 8-8 8 3.582 8 8z" />
+      </svg>
+    );
+  };
+
+  // Get icon for filling
+  const getFillingIcon = (value: string) => {
+    const icons: Record<string, ReactNode> = {
+      "شوكولاتة": (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      ),
+      "كراميل": (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+        </svg>
+      ),
+      "مكسرات": (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+      ),
+      "فواكه": (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M20.843 12.28a8.5 8.5 0 00-13.686 0M12 6.5c1.5-3 3.5-4.5 5-4.5s3.5 1.5 5 4.5M12 6.5V12m0 0c-1.5 3-3.5 4.5-5 4.5s-3.5-1.5-5-4.5" />
+        </svg>
+      ),
+      "صوص": (
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+        </svg>
+      ),
+    };
+    return icons[value] || (
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+      </svg>
+    );
+  };
+
+  // Get icon for cream flavor
+  const getCreamIcon = () => (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
 
   return (
     <AnimatePresence>
@@ -108,9 +182,14 @@ export default function OrderModal({ product, onClose }: Props) {
               </svg>
             </motion.button>
 
-            {/* Product Info - Below image */}
+            {/* Product Info */}
             <div className="absolute bottom-4 right-5 left-5">
-              <span className="mb-1 block text-xs font-medium uppercase tracking-wider text-amber-400">
+              <span className="mb-1 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-amber-400">
+                {isCake && (
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M18 3h.01M21 3a2 2 0 00-2-2M3 3a2 2 0 00-2 2m15-3h-3m-3 0h-3m-3 0h-3m12 3a2 2 0 002 2M3 18a2 2 0 002 2M3 6v12a2 2 0 002 2" />
+                  </svg>
+                )}
                 {product.category}
               </span>
               <h3 className="font-['Amiri'] text-2xl font-bold text-white sm:text-3xl">
@@ -128,34 +207,99 @@ export default function OrderModal({ product, onClose }: Props) {
               </p>
             )}
 
-            {/* Options */}
+            {/* Options - Beautiful Grid for Cakes */}
             {optionGroups.length > 0 && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {optionGroups.map((group) => (
                   <div key={group.name}>
-                    <label className="mb-2 block text-sm font-medium text-white/80">
+                    <label className="mb-3 flex items-center gap-2 text-sm font-medium text-white/80">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-500/20 text-amber-400">
+                        {group.name === "المقاس" ? (
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                          </svg>
+                        ) : group.name === "الحشوة" ? (
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+                          </svg>
+                        ) : (
+                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                          </svg>
+                        )}
+                      </span>
                       {group.name}
                     </label>
-                    <div className="flex flex-wrap gap-2">
-                      {group.values.map((value) => (
-                      <motion.button
-                          key={value}
-                          type="button"
-                          onClick={() =>
-                            setSelectedOptions((prev) => ({ ...prev, [group.name]: value }))
-                          }
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                            selectedOptions[group.name] === value
-                              ? "bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-lg shadow-amber-500/25"
-                              : "border border-white/10 bg-white/5 text-white/70 hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-400"
-                          }`}
-                        >
-                          {value}
-                        </motion.button>
-                      ))}
-                    </div>
+                    
+                    {isCake ? (
+                      // Cake-specific beautiful grid
+                      <div className="grid grid-cols-1 gap-2">
+                        {group.values.map((value) => {
+                          const isSelected = selectedOptions[group.name] === value;
+                          return (
+                            <motion.button
+                              key={value}
+                              type="button"
+                              onClick={() => setSelectedOptions((prev) => ({ ...prev, [group.name]: value }))}
+                              whileHover={{ scale: 1.01 }}
+                              whileTap={{ scale: 0.99 }}
+                              className={`group flex items-center gap-4 rounded-xl border px-4 py-3 text-right transition-all ${
+                                isSelected
+                                  ? "border-amber-500 bg-amber-500/10 text-white"
+                                  : "border-white/10 bg-white/5 text-white/70 hover:border-amber-500/30 hover:bg-amber-500/5"
+                              }`}
+                            >
+                              {/* Icon */}
+                              <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                                isSelected ? "bg-amber-500 text-black" : "bg-white/10 text-white/50 group-hover:bg-amber-500/20 group-hover:text-amber-400"
+                              }`}>
+                                {group.name === "المقاس" && getCakeIcon(value)}
+                                {group.name === "الحشوة" && getFillingIcon(value)}
+                                {group.name === "نكهة الكريمة" && getCreamIcon()}
+                              </div>
+                              
+                              {/* Value */}
+                              <span className={`flex-1 font-medium ${isSelected ? "text-white" : ""}`}>
+                                {value}
+                              </span>
+                              
+                              {/* Check */}
+                              {isSelected && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-black"
+                                >
+                                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                </motion.div>
+                              )}
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      // Regular options - chips style
+                      <div className="flex flex-wrap gap-2">
+                        {group.values.map((value) => (
+                          <motion.button
+                            key={value}
+                            type="button"
+                            onClick={() => setSelectedOptions((prev) => ({ ...prev, [group.name]: value }))}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+                              selectedOptions[group.name] === value
+                                ? "bg-gradient-to-r from-amber-400 to-amber-500 text-black shadow-lg shadow-amber-500/25"
+                                : "border border-white/10 bg-white/5 text-white/70 hover:border-amber-500/50 hover:bg-amber-500/10 hover:text-amber-400"
+                            }`}
+                          >
+                            {value}
+                          </motion.button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
