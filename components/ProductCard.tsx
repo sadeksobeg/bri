@@ -5,6 +5,18 @@ import { motion } from "framer-motion";
 import type { ProductDTO } from "@/lib/types";
 import { parseProductOptions } from "@/lib/whatsapp";
 
+const ScaleIcon = () => (
+  <svg className="h-4 w-4 text-amber-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+  </svg>
+);
+
+const WeightIcon = () => (
+  <svg className="h-4 w-4 text-amber-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+  </svg>
+);
+
 type Props = {
   product: ProductDTO;
   index: number;
@@ -16,12 +28,9 @@ export default function ProductCard({ product, index, onOrder, priority = false 
   const hasImage = product.image && product.image !== "/products/placeholder.jpg";
   const isCake = product.category === "كيك";
   
-  // Parse product options
   const optionGroups = parseProductOptions(product.options);
-  
-  // Get first option group for display (usually size/weight)
   const primaryOption = optionGroups[0];
-  const displayOptions = primaryOption?.values.slice(0, 3).join(" • ") || "";
+  const displayText = primaryOption?.values.slice(0, 3).join(" • ");
 
   return (
     <motion.article
@@ -36,13 +45,11 @@ export default function ProductCard({ product, index, onOrder, priority = false 
       whileHover={{ y: -8 }}
       className="group relative flex cursor-pointer flex-col overflow-hidden rounded-3xl bg-gradient-to-b from-[#242424] to-[#1a1a1a] shadow-xl transition-shadow duration-500 hover:shadow-2xl hover:shadow-amber-500/10"
     >
-      {/* Golden Border Glow on Hover */}
       <div className="absolute inset-0 rounded-3xl opacity-0 transition-opacity duration-500 group-hover:opacity-100">
         <div className="absolute inset-0 rounded-3xl border border-amber-500/30" />
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-amber-500/5 to-transparent" />
       </div>
 
-      {/* Image Container */}
       <div className="relative overflow-hidden">
         <div className="aspect-square">
           {hasImage ? (
@@ -55,7 +62,6 @@ export default function ProductCard({ product, index, onOrder, priority = false 
                 className="object-cover transition-transform duration-700 group-hover:scale-110"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
-              {/* Gradient Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-[#1a1a1a] via-transparent to-transparent opacity-60" />
             </div>
           ) : (
@@ -75,7 +81,6 @@ export default function ProductCard({ product, index, onOrder, priority = false 
           )}
         </div>
 
-        {/* Badges - Top Left */}
         <div className="absolute left-4 top-4 z-10 flex flex-col gap-2">
           {product.isFeatured && (
             <motion.span 
@@ -111,7 +116,6 @@ export default function ProductCard({ product, index, onOrder, priority = false 
           )}
         </div>
 
-        {/* Cake Icon Badge */}
         {isCake && (
           <div className="absolute right-4 top-4 z-10">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-500/20 backdrop-blur-sm shadow-lg">
@@ -123,9 +127,7 @@ export default function ProductCard({ product, index, onOrder, priority = false 
         )}
       </div>
 
-      {/* Content */}
       <div className="relative flex flex-1 flex-col p-6">
-        {/* Category */}
         {product.category && (
           <span className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-amber-500/80">
             {isCake && (
@@ -137,36 +139,25 @@ export default function ProductCard({ product, index, onOrder, priority = false 
           </span>
         )}
         
-        {/* Product Name */}
         <h3 className="mb-2 font-semibold text-xl leading-tight text-white transition-colors duration-300 group-hover:text-amber-400">
           {product.name}
         </h3>
         
-        {/* Description */}
         {product.description && (
           <p className="mb-4 line-clamp-2 text-sm leading-relaxed text-white/40">
             {product.description}
           </p>
         )}
 
-        {/* Options Display */}
-        {displayOptions && (
-          <div className="mb-4 flex items-center gap-3 text-sm text-white/30">
-            <svg className="h-4 w-4 text-amber-500/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              {isCake ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
-              )}
-            </svg>
-            <span>{displayOptions}</span>
+        {displayText && (
+          <div className="mb-4 flex items-center gap-2 text-sm text-white/40">
+            {isCake ? <ScaleIcon /> : <WeightIcon />}
+            <span>{displayText}</span>
           </div>
         )}
 
-        {/* Spacer */}
         <div className="flex-1" />
 
-        {/* CTA Button */}
         <motion.button
           type="button"
           onClick={() => onOrder(product)}

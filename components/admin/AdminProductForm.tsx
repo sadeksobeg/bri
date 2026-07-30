@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import type { ProductDTO, CategoryDTO } from "@/lib/types";
 import type { ProductOptionGroup } from "@/lib/whatsapp";
 
-// Compress image before upload (max 1MB, 1200px width)
 async function compressImage(file: File): Promise<File> {
   return new Promise((resolve, reject) => {
     const img = new window.Image();
@@ -66,7 +65,6 @@ async function compressImage(file: File): Promise<File> {
   });
 }
 
-// Convert file to base64 string
 async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new window.FileReader();
@@ -87,66 +85,26 @@ type Props = {
   onCancel: () => void;
 };
 
-// Default options for cakes
-const DEFAULT_CAKE_OPTIONS = [
-  { name: "المقاس", values: ["4 أشخاص - 12سم", "6 أشخاص - 16سم", "10 أشخاص - 20سم"] },
-];
-
-// Default options for non-cake products
-const DEFAULT_PRODUCT_OPTIONS = [
-  { name: "الوزن", values: ["250غ", "500غ"] },
-];
-
-function getDefaultOptions(isCake: boolean): ProductOptionGroup[] {
-  return isCake ? DEFAULT_CAKE_OPTIONS : DEFAULT_PRODUCT_OPTIONS;
-}
-
 function parseOptions(json: string | null | undefined): ProductOptionGroup[] {
   if (!json) return [];
   try {
     const parsed = JSON.parse(json);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed;
-    }
+    if (Array.isArray(parsed)) return parsed;
     return [];
   } catch {
     return [];
   }
 }
 
-// Preset options for cakes
 const CAKE_PRESETS = {
-  size: {
-    name: "المقاس",
-    values: [
-      "4 أشخاص - 12سم",
-      "6 أشخاص - 16سم",
-      "10 أشخاص - 20سم",
-      "12 شخص - 24سم",
-      "16 شخص - 28سم",
-    ],
-  },
-  filling: {
-    name: "الحشوة",
-    values: [
-      "شوكولاتة",
-      "كراميل",
-      "مكسرات",
-      "فواكه طازجة",
-      "صوص فريز",
-      "صوص أناناس",
-      "صوص فواكه",
-    ],
-  },
-  creamFlavor: {
-    name: "نكهة الكريمة",
-    values: [
-      "كابتشينو",
-      "ميلو",
-      "هوت شوكلت",
-      "نسكافيه",
-    ],
-  },
+  size: { name: "المقاس", values: ["4 أشخاص - 12سم", "6 أشخاص - 16سم", "10 أشخاص - 20سم", "12 شخص - 24سم", "16 شخص - 28سم"] },
+  filling: { name: "الحشوة", values: ["شوكولاتة", "كراميل", "مكسرات", "فواكه طازجة", "صوص فريز", "صوص أناناس", "صوص فواكه"] },
+  creamFlavor: { name: "نكهة الكريمة", values: ["كابتشينو", "ميلو", "هوت شوكلت", "نسكافيه"] },
+};
+
+const PRODUCT_PRESETS = {
+  weight: { name: "الوزن", values: ["250غ", "500غ", "1كغ"] },
+  pieces: { name: "عدد القطع", values: ["6 قطع", "12 قطع", "24 قطع", "36 قطع"] },
 };
 
 export default function AdminProductForm({ product, categories, onSaved, onCancel }: Props) {
@@ -160,13 +118,14 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
   const [isBestSeller, setIsBestSeller] = useState(product?.isBestSeller ?? false);
   const [isNew, setIsNew] = useState(product?.isNew ?? false);
   const [options, setOptions] = useState<ProductOptionGroup[]>(() => {
-    const parsedOptions = product ? parseOptions(product.options) : [];
-    return parsedOptions.length > 0 ? parsedOptions : getDefaultOptions(category === "كيك");
+    const parsed = product ? parseOptions(product.options) : [];
+    if (parsed.length > 0) return parsed;
+    return category === "كيك" 
+      ? [{ name: "المقاس", values: ["4 أشخاص - 12سم", "6 أشخاص - 16سم", "10 أشخاص - 20سم"] }]
+      : [{ name: "الوزن", values: ["250غ", "500غ"] }];
   });
   const [isCake, setIsCake] = useState(category === "كيك");
-  const [cakePreset, setCakePreset] = useState<"size" | "filling" | "cream">("size");
   
-  // Image state
   const [imageUrl, setImageUrl] = useState(product?.image || "");
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
@@ -175,45 +134,23 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Sync category with isCake
   useEffect(() => {
     setIsCake(category === "كيك");
   }, [category]);
 
-  // Update options when category changes (for new products only)
-  useEffect(() => {
-    // Only reset options if this is a new product (no existing product prop)
-    if (!product) {
-      const currentOptions = options;
-      // Check if options are still the defaults
-      const hasDefaultCakeOptions = currentOptions.length === 3 && 
-        currentOptions.some(g => g.name === "المقاس" && g.values.includes("4 أشخاص - 12سم"));
-      const hasDefaultProductOptions = currentOptions.length === 1 && 
-        currentOptions.some(g => g.name === "الوزن" && g.values.includes("250غ"));
-      
-      if ((category === "كيك" && hasDefaultProductOptions) ||
-          (category !== "كيك" && hasDefaultCakeOptions)) {
-        setOptions(getDefaultOptions(category === "كيك"));
-      }
-    }
-  }, [category, product]);
-
-  // Apply cake preset
-  const applyCakePreset = (preset: "size" | "filling" | "cream") => {
+  const applyPreset = (presetKey: string) => {
     const presetMap: Record<string, { name: string; values: string[] }> = {
-      size: CAKE_PRESETS.size,
-      filling: CAKE_PRESETS.filling,
-      cream: CAKE_PRESETS.creamFlavor,
+      ...CAKE_PRESETS,
+      ...PRODUCT_PRESETS,
     };
-    const presetData = presetMap[preset];
+    const presetData = presetMap[presetKey];
+    if (!presetData) return;
     
     setOptions((prev) => {
       const existing = prev.findIndex((g) => g.name === presetData.name);
       if (existing >= 0) {
-        // Update existing group
         return prev.map((g, i) => i === existing ? { ...presetData } : g);
       }
-      // Add new group
       return [...prev, { ...presetData }];
     });
   };
@@ -283,8 +220,8 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
         name: name.trim(),
         description: description.trim(),
         ingredients: ingredients.trim() || null,
-        weight: null, // Now handled via options
-        pieces: null, // Now handled via options
+        weight: null,
+        pieces: null,
         category: category.trim(),
         sortOrder: sortOrder ? parseInt(sortOrder, 10) : 0,
         isActive,
@@ -354,7 +291,6 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
           </h4>
 
           <div className="flex flex-col items-center gap-6 sm:flex-row">
-            {/* Image Preview */}
             <div className="relative h-40 w-40 shrink-0 overflow-hidden rounded-2xl border-2 border-dashed border-amber-500/30 bg-[#0a0a0a]">
               {uploading ? (
                 <div className="flex h-full w-full flex-col items-center justify-center text-white/50">
@@ -377,7 +313,6 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
               )}
             </div>
 
-            {/* Upload Button */}
             <div className="flex-1">
               <input
                 ref={fileInputRef}
@@ -452,15 +387,6 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
               <textarea rows={2} value={ingredients} onChange={(e) => setIngredients(e.target.value)} placeholder="مثال: كاكاو، سكر..." className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500 focus:bg-amber-500/5" />
             </div>
 
-            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4">
-              <p className="mb-2 text-xs text-amber-400/80">
-                <svg className="inline h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {isCake ? "استخدم خيارات المنتج أدناه لإضافة المقاسات والحشوات ونكهات الكريمة" : "استخدم خيارات المنتج أدناه لتحديد الأوزان وعدد القطع المتاحة"}
-              </p>
-            </div>
-
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4">
                 <div>
@@ -499,73 +425,75 @@ export default function AdminProductForm({ product, categories, onSaved, onCance
           </div>
         </motion.div>
 
-        {/* Product Options */}
+        {/* Product Options - THE MAIN WAY TO CONTROL ALL PRODUCT DETAILS */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="rounded-3xl border border-white/10 bg-[#1a1a1a] p-6"
         >
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-4">
             <h4 className="flex items-center gap-2 border-r-2 border-amber-500/30 pr-3 font-medium text-white">خيارات المنتج</h4>
-            <button type="button" onClick={addOptionGroup} className="flex items-center gap-2 text-sm font-medium text-amber-400 hover:text-amber-300">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
-              إضافة مجموعة
-            </button>
+            <p className="mt-2 text-xs text-white/50">أضف الخيارات التي سيختار منها العميل (المقاس، الوزن، عدد القطع، الحشوة، إلخ)</p>
           </div>
 
-          {/* Cake Quick Presets */}
-          {isCake && (
-            <div className="mb-6 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
-              <p className="mb-3 text-sm font-medium text-amber-400">إضافة سريعة لخيارات الكيك:</p>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => applyCakePreset("size")}
-                  className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                  </svg>
-                  المقاسات
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applyCakePreset("filling")}
-                  className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  الحشوات
-                </button>
-                <button
-                  type="button"
-                  onClick={() => applyCakePreset("cream")}
-                  className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30"
-                >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                  </svg>
-                  نكهات الكريمة
-                </button>
-              </div>
+          {/* Quick Presets */}
+          <div className="mb-6 rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
+            <p className="mb-3 text-sm font-medium text-amber-400">إضافة سريعة:</p>
+            <div className="flex flex-wrap gap-2">
+              {isCake ? (
+                <>
+                  <button type="button" onClick={() => applyPreset("size")} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
+                    المقاسات
+                  </button>
+                  <button type="button" onClick={() => applyPreset("filling")} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
+                    الحشوات
+                  </button>
+                  <button type="button" onClick={() => applyPreset("creamFlavor")} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
+                    نكهات الكريمة
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button type="button" onClick={() => applyPreset("weight")} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
+                    الأوزان
+                  </button>
+                  <button type="button" onClick={() => applyPreset("pieces")} className="flex items-center gap-2 rounded-full bg-amber-500/20 px-4 py-2 text-sm text-amber-300 transition-all hover:bg-amber-500/30">
+                    عدد القطع
+                  </button>
+                </>
+              )}
             </div>
-          )}
+          </div>
 
           <div className="space-y-4">
             {options.map((group, gi) => (
               <motion.div key={gi} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="group rounded-2xl border border-white/10 bg-white/5 p-4">
                 <div className="mb-3 flex items-center gap-3">
-                  <input value={group.name} onChange={(e) => updateOptionGroup(gi, { name: e.target.value })} placeholder="اسم الخيار" className="flex-1 rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500" />
+                  <input 
+                    value={group.name} 
+                    onChange={(e) => updateOptionGroup(gi, { name: e.target.value })} 
+                    placeholder="اسم الخيار (مثال: المقاس، الوزن، عدد القطع)" 
+                    className="flex-1 rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500" 
+                  />
                   <button type="button" onClick={() => removeOptionGroup(gi)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20">
                     <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                   </button>
                 </div>
-                <input value={group.values.join("، ")} onChange={(e) => updateOptionGroup(gi, { values: e.target.value.split(/[،,]/).map((v) => v.trim()).filter(Boolean) })} placeholder="القيم: 250غ، 500غ" className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500" />
+                <input 
+                  value={group.values.join("، ")} 
+                  onChange={(e) => updateOptionGroup(gi, { values: e.target.value.split(/[،,]/).map((v) => v.trim()).filter(Boolean) })} 
+                  placeholder="القيم: 250غ، 500غ (افصل بين كل قيمة بفاصلة أو ترجمة عربية)" 
+                  className="w-full rounded-xl border border-white/10 bg-[#0a0a0a] px-4 py-2.5 text-sm text-white placeholder:text-white/30 outline-none transition-all focus:border-amber-500" 
+                />
               </motion.div>
             ))}
           </div>
+
+          <button type="button" onClick={addOptionGroup} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/20 py-3 text-sm text-white/50 hover:border-amber-500/50 hover:text-amber-400">
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            إضافة خيار جديد
+          </button>
         </motion.div>
 
         {error && (
